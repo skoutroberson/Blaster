@@ -1,0 +1,14 @@
+.vs
+Binaries
+Build
+Config
+Content
+DerivedDataCache
+Intermediate
+Saved
+commit.template.txt
+
+*.png
+*.uplugin
+*.vsconfig
+*.sln
