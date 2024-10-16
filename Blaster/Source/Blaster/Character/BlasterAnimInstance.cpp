@@ -44,6 +44,6 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	CharacterRotation = BlasterCharacter->GetActorRotation();
 	const FRotator Delta = UKismetMathLibrary::NormalizedDeltaRotator(CharacterRotation, CharacterRotationLastFrame);
 	const float Target = Delta.Yaw / DeltaTime;
-	const float Interp = FMath::FInterpTo(Lean, Target, DeltaTime, 6.f);
+	const float Interp = FMath::FInterpTo(Lean, Target, DeltaTime, 2.f);
 	Lean = FMath::Clamp(Interp, -90.f, 90.f);
 }
