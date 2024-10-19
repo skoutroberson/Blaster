@@ -41,7 +41,13 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	FRotator MovementRotation = UKismetMathLibrary::MakeRotFromX(BlasterCharacter->GetVelocity());
 	FRotator DeltaRot = UKismetMathLibrary::NormalizedDeltaRotator(MovementRotation, AimRotation);
 	DeltaRotation = FMath::RInterpTo(DeltaRotation, DeltaRot, DeltaTime, 6.f);
-	YawOffset = DeltaRotation.Yaw;
+
+	const float DeltaRotYaw = DeltaRot.Yaw;
+	YawOffset = DeltaRotYaw;
+
+	//YawOffset = DeltaRotation.Yaw; // interping this does not look right when strafing left and right fast because it passes through the forward animation
+
+	//UE_LOG(LogTemp, Warning, TEXT("YawOffset = %f"), YawOffset);
 
 	CharacterRotationLastFrame = CharacterRotation;
 	CharacterRotation = BlasterCharacter->GetActorRotation();
