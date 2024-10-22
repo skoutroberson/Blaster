@@ -23,7 +23,7 @@ protected:
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_OnHit();
+	void Multicast_OnHit(bool bHitPlayer);
 
 private:
 
@@ -43,6 +43,14 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ImpactSound;
+
+	// blood spray
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* BloodParticles;
+
+	UPROPERTY(EditAnywhere)
+	class USoundCue* ImpactBodySound;
 
 public:	
 

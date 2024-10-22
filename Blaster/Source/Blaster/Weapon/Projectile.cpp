@@ -53,30 +53,46 @@ void AProjectile::BeginPlay()
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	bool bHitPlayer = false;
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter)
 	{
 		BlasterCharacter->MulticastHit();
+		bHitPlayer = true;
 	}
-
-	/*
-	if (HasAuthority())
+	if(HasAuthority())
 	{
-		Multicast_OnHit();
+		Multicast_OnHit(bHitPlayer);
 	}
-	*/
-	Destroy();
 }
 
-void AProjectile::Multicast_OnHit_Implementation()
+void AProjectile::Multicast_OnHit_Implementation(bool bHitPlayer)
 {
-	if (ImpactParticles)
+	if (bHitPlayer)
 	{
-		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());
+		FTransform BloodTransform;
+		BloodTransform.SetLocation(GetActorLocation());
+		BloodTransform.SetRotation(GetVelocity().ToOrientationQuat());
+
+		if (BloodParticles)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticles, BloodTransform);
+		}
+		if (ImpactBodySound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, ImpactBodySound, GetActorLocation());
+		}
 	}
-	if (ImpactSound)
+	else
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
+		if (ImpactParticles)
+		{
+			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());
+		}
+		if (ImpactSound)
+		{
+			UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
+		}
 	}
 	Destroy();
 }
@@ -91,6 +107,7 @@ void AProjectile::Destroyed()
 {
 	Super::Destroyed();
 
+	/*
 	if (ImpactParticles)
 	{
 		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ImpactParticles, GetActorTransform());
@@ -99,5 +116,6 @@ void AProjectile::Destroyed()
 	{
 		UGameplayStatics::PlaySoundAtLocation(this, ImpactSound, GetActorLocation());
 	}
+	*/
 }
 
