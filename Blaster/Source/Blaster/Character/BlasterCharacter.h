@@ -22,8 +22,8 @@ public:
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
 
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastHit();
+	//UFUNCTION(NetMulticast, Reliable)
+	//void MulticastHit();
 
 	virtual void OnRep_ReplicatedMovement() override;
 
@@ -45,6 +45,10 @@ protected:
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void PlayHitReactMontage();
+
+	UFUNCTION()
+	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
+	void UpdateHUDHealth();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -107,6 +111,10 @@ private:
 
 	UFUNCTION()
 	void OnRep_Health();
+
+	class ABlasterPlayerController* BlasterPlayerController;
+
+	TArray<FName> BoneNames;
 
 public:	
 

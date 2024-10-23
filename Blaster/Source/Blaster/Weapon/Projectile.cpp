@@ -10,6 +10,7 @@
 #include "Sound/SoundCue.h"
 #include "Blaster/Character/BlasterCharacter.h"
 #include "Blaster/Blaster.h"
+#include "Components/SkeletalMeshComponent.h"
 
 AProjectile::AProjectile()
 {
@@ -53,27 +54,73 @@ void AProjectile::BeginPlay()
 
 void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
+	/*
 	bool bHitPlayer = false;
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter)
 	{
-		BlasterCharacter->MulticastHit();
 		bHitPlayer = true;
 	}
 	if(HasAuthority())
 	{
 		Multicast_OnHit(bHitPlayer);
 	}
+	*/
+	int32 HitBoneIndex;
+	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
+	if (BlasterCharacter && !Hit.BoneName.IsNone())
+	{
+		HitBoneIndex = BlasterCharacter->GetMesh()->GetBoneIndex(Hit.BoneName);
+	}
+	if (HasAuthority())
+	{
+		if (HitBoneIndex != INDEX_NONE)
+		{
+			Multicast_OnHit(HitBoneIndex, BlasterCharacter);
+		}
+		else
+		{
+			Multicast_OnHit(HitBoneIndex, nullptr);
+		}
+	}
+
+	Destroy();
 }
 
-void AProjectile::Multicast_OnHit_Implementation(bool bHitPlayer)
+
+void AProjectile::Multicast_OnHit_Implementation(int32 HitBone, ACharacter* HitCharacter)
 {
-	if (bHitPlayer)
+	// spawn blood if projectile hit player, or other particles if not
+	if (HitBone != INDEX_NONE && HitCharacter != nullptr)
 	{
 		FTransform BloodTransform;
 		BloodTransform.SetLocation(GetActorLocation());
 		BloodTransform.SetRotation(GetVelocity().ToOrientationQuat());
+		
+		const FName BoneName = HitCharacter->GetMesh()->GetBoneName(HitBone);
+		const FVector BoneLocation = HitCharacter->GetMesh()->GetBoneLocation(BoneName);
+		FHitResult HitResult;
 
+		if (!BoneName.IsNone() && !BoneLocation.IsZero())
+		{
+			GetWorld()->LineTraceSingleByChannel(
+				HitResult,
+				GetActorLocation(),
+				BoneLocation,
+				ECC_Blood
+			);
+			if (HitResult.bBlockingHit)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Trace HIT!"));
+				BloodTransform.SetLocation(HitResult.ImpactPoint);
+				BloodTransform.SetRotation(HitResult.ImpactNormal.ToOrientationQuat());
+			}
+			else
+			{
+				BloodTransform.SetLocation(BoneLocation);
+			}
+		}
+			
 		if (BloodParticles)
 		{
 			UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticles, BloodTransform);
@@ -97,6 +144,7 @@ void AProjectile::Multicast_OnHit_Implementation(bool bHitPlayer)
 	Destroy();
 }
 
+
 void AProjectile::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -106,7 +154,7 @@ void AProjectile::Tick(float DeltaTime)
 void AProjectile::Destroyed()
 {
 	Super::Destroyed();
-
+	
 	/*
 	if (ImpactParticles)
 	{
