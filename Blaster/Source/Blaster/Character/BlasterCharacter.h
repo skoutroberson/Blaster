@@ -8,6 +8,18 @@
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "BlasterCharacter.generated.h"
 
+UENUM(BlueprintType)
+enum class EDeathAnimState : uint8
+{
+	EDAS_None		UMETA(DisplayName = "None"),
+	EDAS_Front		UMETA(DisplayName = "Front"),
+	EDAS_Back		UMETA(DisplayName = "Back"),
+	EDAS_Left		UMETA(DisplayName = "Left"),
+	EDAS_Right		UMETA(DisplayName = "Right"),
+	EDAS_Headshot	UMETA(DisplayName = "Front"),
+	EDAS_Crouch		UMETA(DisplayName = "Crouch"),
+};
+
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
@@ -21,11 +33,13 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	void PlayFireMontage(bool bAiming);
-
-	//UFUNCTION(NetMulticast, Reliable)
-	//void MulticastHit();
-
+	void PlayElimMontage(const FName& ElimSide);
 	virtual void OnRep_ReplicatedMovement() override;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Elim();
+
+	EDeathAnimState CalculateDeathAnimState(const FVector& DamageCauserPosition);
 
 protected:
 	virtual void BeginPlay() override;
@@ -84,7 +98,10 @@ private:
 	class UAnimMontage* FireWeaponMontage;
 
 	UPROPERTY(EditAnywhere, Category = Combat)
-	class UAnimMontage* HitReactMontage;
+	UAnimMontage* HitReactMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* ElimMontage;
 
 	void HideCameraIfCharacterClose();
 
@@ -92,7 +109,7 @@ private:
 	float CameraThreshold = 200.f;
 
 	bool bRotateRootBone;
-	float TurnThreshold = 2.f;
+	float TurnThreshold = 10.f;
 	FRotator ProxyRotationLastFrame;
 	FRotator ProxyRotation;
 	float ProxyYaw;
@@ -114,7 +131,9 @@ private:
 
 	class ABlasterPlayerController* BlasterPlayerController;
 
-	TArray<FName> BoneNames;
+	bool bElimmed = false;
+
+	EDeathAnimState DeathAnimState;
 
 public:	
 
@@ -128,4 +147,7 @@ public:
 	FVector GetHitTarget() const;
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE bool ShouldRotateRootBone() const { return bRotateRootBone; }
+	FORCEINLINE void SetDeathAnimState(EDeathAnimState NewDeathAnimState) { DeathAnimState = NewDeathAnimState; }
+	FORCEINLINE EDeathAnimState GetDeathAnimState() { return DeathAnimState; }
+	FORCEINLINE bool IsElimmed() const { return bElimmed; }
 };

@@ -23,7 +23,7 @@ protected:
 	virtual void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void Multicast_OnHit(int32 HitBone, ACharacter* HitCharacter);
+	void Multicast_OnHit(int32 HitBone = INDEX_NONE, ACharacter* HitCharacter = nullptr);
 
 	UPROPERTY(EditAnywhere)
 	float Damage = 20.f;

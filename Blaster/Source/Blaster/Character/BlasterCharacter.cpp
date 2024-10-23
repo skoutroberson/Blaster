@@ -16,6 +16,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Blaster/GameMode/BlasterGameMode.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -65,6 +66,35 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 
 	SimProxiesTurn();
 	TimeSinceLastMovementReplication = 0.f;
+}
+
+void ABlasterCharacter::Elim_Implementation()
+{
+	bElimmed = true;
+
+	FName SectionName;
+	switch (DeathAnimState)
+	{
+	case EDeathAnimState::EDAS_Front:
+		SectionName = FName("Front");
+		break;
+	case EDeathAnimState::EDAS_Crouch:
+		SectionName = FName("Crouch");
+		break;
+	case EDeathAnimState::EDAS_Headshot:
+		SectionName = FName("Headshot");
+		break;
+	case EDeathAnimState::EDAS_Back:
+		SectionName = FName("Back");
+		break;
+	case EDeathAnimState::EDAS_Right:
+		SectionName = FName("Right");
+		break;
+	}
+
+	PlayElimMontage(SectionName);
+
+	DeathAnimState = EDeathAnimState::EDAS_None;
 }
 
 void ABlasterCharacter::BeginPlay()
@@ -144,6 +174,16 @@ void ABlasterCharacter::PlayFireMontage(bool bAiming)
 	}
 }
 
+void ABlasterCharacter::PlayElimMontage(const FName& ElimSide)
+{
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	if (AnimInstance && ElimMontage)
+	{
+		AnimInstance->Montage_Play(ElimMontage);
+		AnimInstance->Montage_JumpToSection(ElimSide);
+	}
+}
+
 void ABlasterCharacter::PlayHitReactMontage()
 {
 	if (Combat == nullptr || Combat->EquippedWeapon == nullptr) return;
@@ -162,6 +202,17 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 	UpdateHUDHealth();
 	PlayHitReactMontage();
+
+	if (Health == 0.f)
+	{
+		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+		if (BlasterGameMode)
+		{
+			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
+			ABlasterPlayerController* AttackerController = Cast<ABlasterPlayerController>(InstigatorController);
+			BlasterGameMode->PlayerEliminated(this, BlasterPlayerController, AttackerController);
+		}
+	}
 }
 
 void ABlasterCharacter::MoveForward(float Value)
@@ -421,6 +472,49 @@ void ABlasterCharacter::UpdateHUDHealth()
 	{
 		BlasterPlayerController->SetHUDHealth(Health, MaxHealth);
 	}
+}
+
+EDeathAnimState ABlasterCharacter::CalculateDeathAnimState(const FVector& DamageCauserPosition)
+{
+	if (GetCharacterMovement()->IsCrouching())
+	{
+		return EDeathAnimState::EDAS_Crouch;
+	}
+	else if (DeathAnimState == EDeathAnimState::EDAS_Headshot)
+	{
+		return EDeathAnimState::EDAS_Headshot;
+	}
+
+	const FVector MeshForwardVector = GetMesh()->GetForwardVector();
+	const FVector MeshRightVector = GetMesh()->GetRightVector();
+	FVector Dir = DamageCauserPosition - GetMesh()->GetComponentLocation();  Dir.Z = 0.f; Dir = Dir.GetSafeNormal();
+	const float FDot = FVector::DotProduct(MeshForwardVector, Dir);
+	const float RDot = FVector::DotProduct(MeshForwardVector, Dir);
+	
+	if (FMath::Abs(FDot) >= FMath::Abs(RDot))
+	{
+		if (FDot >= 0.f)
+		{
+			return EDeathAnimState::EDAS_Front;
+		}
+		else
+		{
+			return EDeathAnimState::EDAS_Back;
+		}
+	}
+	else
+	{
+		if (RDot >= 0.f)
+		{
+			return EDeathAnimState::EDAS_Right;
+		}
+		else
+		{
+			return EDeathAnimState::EDAS_Front; // I dont have a left death animation
+		}
+	}
+
+	return EDeathAnimState();
 }
 
 void ABlasterCharacter::SetOverlappingWeapon(AWeapon* Weapon)

@@ -80,7 +80,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 		}
 		else
 		{
-			Multicast_OnHit(HitBoneIndex, nullptr);
+			Multicast_OnHit();
 		}
 	}
 
@@ -111,7 +111,6 @@ void AProjectile::Multicast_OnHit_Implementation(int32 HitBone, ACharacter* HitC
 			);
 			if (HitResult.bBlockingHit)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Trace HIT!"));
 				BloodTransform.SetLocation(HitResult.ImpactPoint);
 				BloodTransform.SetRotation(HitResult.ImpactNormal.ToOrientationQuat());
 			}
@@ -128,6 +127,16 @@ void AProjectile::Multicast_OnHit_Implementation(int32 HitBone, ACharacter* HitC
 		if (ImpactBodySound)
 		{
 			UGameplayStatics::PlaySoundAtLocation(this, ImpactBodySound, GetActorLocation());
+		}
+
+		ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(HitCharacter);
+		if (BlasterCharacter && BoneName.IsEqual(FName("head")))
+		{
+			BlasterCharacter->SetDeathAnimState(EDeathAnimState::EDAS_Headshot);
+		}
+		else
+		{
+			BlasterCharacter->SetDeathAnimState(BlasterCharacter->CalculateDeathAnimState(BloodTransform.GetLocation()));
 		}
 	}
 	else
