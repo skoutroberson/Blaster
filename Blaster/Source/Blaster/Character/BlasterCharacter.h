@@ -35,11 +35,13 @@ public:
 	void PlayFireMontage(bool bAiming);
 	void PlayElimMontage(const FName& ElimSide);
 	virtual void OnRep_ReplicatedMovement() override;
-
-	UFUNCTION(NetMulticast, Reliable)
 	void Elim();
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiCastElim();
 
 	EDeathAnimState CalculateDeathAnimState(const FVector& DamageCauserPosition);
+
+	void RespawnPlayer();
 
 protected:
 	virtual void BeginPlay() override;
@@ -109,7 +111,7 @@ private:
 	float CameraThreshold = 200.f;
 
 	bool bRotateRootBone;
-	float TurnThreshold = 10.f;
+	float TurnThreshold = 5.f;
 	FRotator ProxyRotationLastFrame;
 	FRotator ProxyRotation;
 	float ProxyYaw;
@@ -134,6 +136,20 @@ private:
 	bool bElimmed = false;
 
 	EDeathAnimState DeathAnimState;
+
+	FTimerHandle ElimTimer;
+	FTimerHandle RagdollTimer;
+
+	UPROPERTY(EditDefaultsOnly)
+	float ElimDelay = 3.f;
+
+	float RagdollDelay = 1.f;
+
+	void ElimTimerFinished();
+	void RagdollTimerFinished();
+
+	FCollisionResponseContainer CapsuleCollisionResponses;
+	FCollisionResponseContainer MeshCollisionResponses;
 
 public:	
 

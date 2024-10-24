@@ -66,7 +66,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimi
 		Multicast_OnHit(bHitPlayer);
 	}
 	*/
-	int32 HitBoneIndex;
+	int32 HitBoneIndex = INDEX_NONE;
 	ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(OtherActor);
 	if (BlasterCharacter && !Hit.BoneName.IsNone())
 	{

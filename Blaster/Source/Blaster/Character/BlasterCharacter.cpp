@@ -17,12 +17,13 @@
 #include "Sound/SoundCue.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Blaster/GameMode/BlasterGameMode.h"
+#include "TimerManager.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
+	
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(GetMesh());
 	CameraBoom->TargetArmLength = 400.f;
@@ -68,7 +69,19 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 	TimeSinceLastMovementReplication = 0.f;
 }
 
-void ABlasterCharacter::Elim_Implementation()
+void ABlasterCharacter::Elim()
+{
+	MultiCastElim();
+	GetWorldTimerManager().SetTimer(
+		ElimTimer,
+		this,
+		&ABlasterCharacter::ElimTimerFinished,
+		ElimDelay
+	);
+
+}
+
+void ABlasterCharacter::MultiCastElim_Implementation()
 {
 	bElimmed = true;
 
@@ -95,6 +108,78 @@ void ABlasterCharacter::Elim_Implementation()
 	PlayElimMontage(SectionName);
 
 	DeathAnimState = EDeathAnimState::EDAS_None;
+
+	RagdollDelay = FMath::FRandRange(0.25f, 1.5f);
+
+	GetWorldTimerManager().SetTimer(
+		RagdollTimer,
+		this,
+		&ABlasterCharacter::RagdollTimerFinished,
+		RagdollDelay
+	);
+}
+
+void ABlasterCharacter::ElimTimerFinished()
+{
+	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	if (BlasterGameMode)
+	{
+		BlasterGameMode->RequestRespawn(this, Controller);
+	}
+}
+
+void ABlasterCharacter::RagdollTimerFinished()
+{
+	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
+
+	if (CapsuleComp)
+	{
+		CapsuleCollisionResponses = CapsuleComp->GetCollisionResponseToChannels();
+		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		CapsuleComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+
+		MeshCollisionResponses = GetMesh()->GetCollisionResponseToChannels();
+
+		GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+		GetMesh()->SetAllBodiesSimulatePhysics(true);
+		GetMesh()->SetSimulatePhysics(true);
+		GetMesh()->WakeAllRigidBodies();
+		GetMesh()->bBlendPhysics = true;
+
+		UCharacterMovementComponent* CharacterComp = Cast<UCharacterMovementComponent>(GetMovementComponent());
+		if (CharacterComp)
+		{
+			CharacterComp->StopMovementImmediately();
+			CharacterComp->DisableMovement();
+			CharacterComp->SetComponentTickEnabled(false);
+		}
+	}
+}
+
+void ABlasterCharacter::RespawnPlayer()
+{
+	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
+
+	if (CapsuleComp)
+	{
+		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+		CapsuleComp->SetCollisionResponseToChannels(CapsuleCollisionResponses);
+
+
+		GetMesh()->SetCollisionProfileName(TEXT("Pawn"));
+		GetMesh()->SetAllBodiesSimulatePhysics(false);
+		GetMesh()->SetSimulatePhysics(false);
+		GetMesh()->PutAllRigidBodiesToSleep();
+		GetMesh()->bBlendPhysics = false;
+		GetMesh()->SetCollisionResponseToChannels(MeshCollisionResponses);
+
+		UCharacterMovementComponent* CharacterComp = Cast<UCharacterMovementComponent>(GetMovementComponent());
+		if (CharacterComp)
+		{
+			CharacterComp->SetMovementMode(EMovementMode::MOVE_Walking);
+			CharacterComp->SetComponentTickEnabled(true);
+		}
+	}
 }
 
 void ABlasterCharacter::BeginPlay()
@@ -203,7 +288,7 @@ void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const 
 	UpdateHUDHealth();
 	PlayHitReactMontage();
 
-	if (Health == 0.f)
+	if (Health == 0.f && !bElimmed)
 	{
 		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 		if (BlasterGameMode)
@@ -510,7 +595,7 @@ EDeathAnimState ABlasterCharacter::CalculateDeathAnimState(const FVector& Damage
 		}
 		else
 		{
-			return EDeathAnimState::EDAS_Front; // I dont have a left death animation
+			return EDeathAnimState::EDAS_Back; // I dont have a left death animation
 		}
 	}
 
