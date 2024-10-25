@@ -141,7 +141,7 @@ private:
 	FTimerHandle RagdollTimer;
 
 	UPROPERTY(EditDefaultsOnly)
-	float ElimDelay = 3.f;
+	float ElimDelay = 4.f;
 
 	float RagdollDelay = 1.f;
 

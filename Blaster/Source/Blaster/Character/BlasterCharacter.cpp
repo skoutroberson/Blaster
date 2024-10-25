@@ -71,6 +71,10 @@ void ABlasterCharacter::OnRep_ReplicatedMovement()
 
 void ABlasterCharacter::Elim()
 {
+	if (Combat && Combat->EquippedWeapon)
+	{
+		Combat->EquippedWeapon->Dropped();
+	}
 	MultiCastElim();
 	GetWorldTimerManager().SetTimer(
 		ElimTimer,
@@ -78,7 +82,6 @@ void ABlasterCharacter::Elim()
 		&ABlasterCharacter::ElimTimerFinished,
 		ElimDelay
 	);
-
 }
 
 void ABlasterCharacter::MultiCastElim_Implementation()
@@ -109,7 +112,7 @@ void ABlasterCharacter::MultiCastElim_Implementation()
 
 	DeathAnimState = EDeathAnimState::EDAS_None;
 
-	RagdollDelay = FMath::FRandRange(0.25f, 1.5f);
+	RagdollDelay = FMath::FRandRange(0.75, 1.5f);
 
 	GetWorldTimerManager().SetTimer(
 		RagdollTimer,
@@ -117,6 +120,19 @@ void ABlasterCharacter::MultiCastElim_Implementation()
 		&ABlasterCharacter::RagdollTimerFinished,
 		RagdollDelay
 	);
+
+	// Disable character movement
+	GetCharacterMovement()->DisableMovement();
+	GetCharacterMovement()->StopMovementImmediately();
+	if (BlasterPlayerController)
+	{
+		DisableInput(BlasterPlayerController);
+	}
+	// Disable collision
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCapsuleComponent()->SetSimulatePhysics(false);
+	MeshCollisionResponses = GetMesh()->GetCollisionResponseToChannels();
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ABlasterCharacter::ElimTimerFinished()
@@ -130,41 +146,26 @@ void ABlasterCharacter::ElimTimerFinished()
 
 void ABlasterCharacter::RagdollTimerFinished()
 {
-	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
+	SetReplicateMovement(false);
 
-	if (CapsuleComp)
-	{
-		CapsuleCollisionResponses = CapsuleComp->GetCollisionResponseToChannels();
-		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		CapsuleComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+	GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
+	GetMesh()->SetAllBodiesSimulatePhysics(true);
+	GetMesh()->SetSimulatePhysics(true);
+	GetMesh()->WakeAllRigidBodies();
+	GetMesh()->bBlendPhysics = true;
 
-		MeshCollisionResponses = GetMesh()->GetCollisionResponseToChannels();
-
-		GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
-		GetMesh()->SetAllBodiesSimulatePhysics(true);
-		GetMesh()->SetSimulatePhysics(true);
-		GetMesh()->WakeAllRigidBodies();
-		GetMesh()->bBlendPhysics = true;
-
-		UCharacterMovementComponent* CharacterComp = Cast<UCharacterMovementComponent>(GetMovementComponent());
-		if (CharacterComp)
-		{
-			CharacterComp->StopMovementImmediately();
-			CharacterComp->DisableMovement();
-			CharacterComp->SetComponentTickEnabled(false);
-		}
-	}
+	GetCharacterMovement()->SetComponentTickEnabled(false);
 }
 
 void ABlasterCharacter::RespawnPlayer()
 {
+	SetReplicateMovement(true);
 	UCapsuleComponent* CapsuleComp = GetCapsuleComponent();
 
 	if (CapsuleComp)
 	{
 		CapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		CapsuleComp->SetCollisionResponseToChannels(CapsuleCollisionResponses);
-
+		GetCapsuleComponent()->SetSimulatePhysics(true);
 
 		GetMesh()->SetCollisionProfileName(TEXT("Pawn"));
 		GetMesh()->SetAllBodiesSimulatePhysics(false);
@@ -179,6 +180,10 @@ void ABlasterCharacter::RespawnPlayer()
 			CharacterComp->SetMovementMode(EMovementMode::MOVE_Walking);
 			CharacterComp->SetComponentTickEnabled(true);
 		}
+	}
+	if (BlasterPlayerController)
+	{
+		EnableInput(BlasterPlayerController);
 	}
 }
 
