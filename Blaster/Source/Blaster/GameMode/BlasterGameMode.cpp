@@ -12,6 +12,7 @@ void ABlasterGameMode::PlayerEliminated(ABlasterCharacter* ElimmedCharacter, ABl
 	if (ElimmedCharacter)
 	{
 		ElimmedCharacter->Elim();
+		//ElimmedCharacter->RagdollAfterDelay(0.5f, 1.5f);
 	}
 }
 

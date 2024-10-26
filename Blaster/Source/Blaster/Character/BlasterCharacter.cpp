@@ -112,14 +112,7 @@ void ABlasterCharacter::MultiCastElim_Implementation()
 
 	DeathAnimState = EDeathAnimState::EDAS_None;
 
-	RagdollDelay = FMath::FRandRange(0.75, 1.5f);
-
-	GetWorldTimerManager().SetTimer(
-		RagdollTimer,
-		this,
-		&ABlasterCharacter::RagdollTimerFinished,
-		RagdollDelay
-	);
+	RagdollAfterDelay(1.5f, 1.5f);
 
 	// Disable character movement
 	GetCharacterMovement()->DisableMovement();
@@ -133,6 +126,18 @@ void ABlasterCharacter::MultiCastElim_Implementation()
 	GetCapsuleComponent()->SetSimulatePhysics(false);
 	MeshCollisionResponses = GetMesh()->GetCollisionResponseToChannels();
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ABlasterCharacter::RagdollAfterDelay(float DelayMin, float DelayMax)
+{
+	//RagdollDelay = FMath::FRandRange(DelayMin, DelayMax);
+
+	GetWorldTimerManager().SetTimer(
+		RagdollTimer,
+		this,
+		&ABlasterCharacter::RagdollTimerFinished,
+		DelayMin
+	);
 }
 
 void ABlasterCharacter::ElimTimerFinished()
@@ -153,7 +158,6 @@ void ABlasterCharacter::RagdollTimerFinished()
 	GetMesh()->SetSimulatePhysics(true);
 	GetMesh()->WakeAllRigidBodies();
 	GetMesh()->bBlendPhysics = true;
-
 	GetCharacterMovement()->SetComponentTickEnabled(false);
 }
 
@@ -444,15 +448,19 @@ void ABlasterCharacter::SimProxiesTurn()
 	ProxyRotation = GetActorRotation();
 	ProxyYaw = UKismetMathLibrary::NormalizedDeltaRotator(ProxyRotation, ProxyRotationLastFrame).Yaw;
 
+	//UE_LOG(LogTemp, Warning, TEXT("ProxyYaw: %f"), ProxyYaw);
+
 	if (FMath::Abs(ProxyYaw) > TurnThreshold)
 	{
 		if (ProxyYaw > TurnThreshold)
 		{
 			TurningInPlace = ETurningInPlace::ETIP_Right;
+			//ProxyYaw = 0.f;
 		}
 		else if (ProxyYaw < -TurnThreshold)
 		{
 			TurningInPlace = ETurningInPlace::ETIP_Left;
+			//ProxyYaw = 0.f;
 		}
 		else
 		{

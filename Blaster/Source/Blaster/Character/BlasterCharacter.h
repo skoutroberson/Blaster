@@ -111,7 +111,7 @@ private:
 	float CameraThreshold = 200.f;
 
 	bool bRotateRootBone;
-	float TurnThreshold = 5.f;
+	float TurnThreshold = 1.5f;
 	FRotator ProxyRotationLastFrame;
 	FRotator ProxyRotation;
 	float ProxyYaw;
@@ -143,7 +143,7 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float ElimDelay = 4.f;
 
-	float RagdollDelay = 1.f;
+	float RagdollDelay = 2.f;
 
 	void ElimTimerFinished();
 	void RagdollTimerFinished();
@@ -166,4 +166,8 @@ public:
 	FORCEINLINE void SetDeathAnimState(EDeathAnimState NewDeathAnimState) { DeathAnimState = NewDeathAnimState; }
 	FORCEINLINE EDeathAnimState GetDeathAnimState() { return DeathAnimState; }
 	FORCEINLINE bool IsElimmed() const { return bElimmed; }
+	// Called when eliminated in BlasterGameMode
+	void RagdollAfterDelay(float DelayMin, float DelayMax);
+	FORCEINLINE float GetHealth() const { return Health; }
+	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
 };
