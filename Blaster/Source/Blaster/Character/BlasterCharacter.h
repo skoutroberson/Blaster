@@ -65,6 +65,8 @@ protected:
 	UFUNCTION()
 	void ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, class AController* InstigatorController, AActor* DamageCauser);
 	void UpdateHUDHealth();
+	// Poll for any relevant classes and initialize our HUD
+	void PollInit();
 
 private:
 	UPROPERTY(VisibleAnywhere, Category = Camera)
@@ -150,6 +152,8 @@ private:
 
 	FCollisionResponseContainer CapsuleCollisionResponses;
 	FCollisionResponseContainer MeshCollisionResponses;
+
+	class ABlasterPlayerState* BlasterPlayerState;
 
 public:	
 
