@@ -133,6 +133,7 @@ private:
 	UFUNCTION()
 	void OnRep_Health();
 
+	UPROPERTY()
 	class ABlasterPlayerController* BlasterPlayerController;
 
 	bool bElimmed = false;
@@ -153,6 +154,7 @@ private:
 	FCollisionResponseContainer CapsuleCollisionResponses;
 	FCollisionResponseContainer MeshCollisionResponses;
 
+	UPROPERTY()
 	class ABlasterPlayerState* BlasterPlayerState;
 
 public:	
