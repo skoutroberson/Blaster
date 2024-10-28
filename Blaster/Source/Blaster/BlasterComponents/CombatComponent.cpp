@@ -139,6 +139,11 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 	}
 	EquippedWeapon->SetOwner(Character);
 	EquippedWeapon->SetHUDAmmo();
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(EquippedWeapon->GetCarriedAmmo());
+	}
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }

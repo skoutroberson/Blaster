@@ -110,6 +110,19 @@ private:
 
 	bool CanFire();
 
+	/*
+	* Instead of putting this code in the weapon class, it can be put here if we wanted the player to be able to hold different ammo types like in a survival game.
+	* 
+	// Carried ammo for this weapon
+	UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo, EditAnywhere)
+	int32 CarriedAmmo = 0;
+
+	UFUNCTION()
+	void OnRep_CarriedAmmo();
+
+	TMap<EWeaponType, int32> CarriedAmmoMap;
+	*/
+
 public:	
 
 	

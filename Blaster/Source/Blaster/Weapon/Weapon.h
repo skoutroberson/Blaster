@@ -127,11 +127,19 @@ private:
 	UPROPERTY()
 	class ABlasterPlayerController* BlasterOwnerController;
 
+	// Carried ammo for this weapon
+	UPROPERTY(ReplicatedUsing = OnRep_CarriedAmmo, EditAnywhere)
+	int32 CarriedAmmo = 0;
+
+	UFUNCTION()
+	void OnRep_CarriedAmmo();
+
 public:	
 	void SetWeaponState(EWeaponState State);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
+	FORCEINLINE int32 GetCarriedAmmo() const { return CarriedAmmo; }
 	bool IsEmpty();
 };
