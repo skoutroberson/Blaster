@@ -87,6 +87,10 @@ void ABlasterCharacter::Elim()
 
 void ABlasterCharacter::MultiCastElim_Implementation()
 {
+	if (BlasterPlayerController)
+	{
+		BlasterPlayerController->SetHUDWeaponAmmo(0);
+	}
 	bElimmed = true;
 
 	FName SectionName;
