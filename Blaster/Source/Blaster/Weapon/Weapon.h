@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "WeaponTypes.h"
 #include "Weapon.generated.h"
 
 UENUM(BlueprintType)
@@ -134,6 +135,8 @@ private:
 	UFUNCTION()
 	void OnRep_CarriedAmmo();
 
+	EWeaponType WeaponType;
+
 public:	
 	void SetWeaponState(EWeaponState State);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
@@ -141,5 +144,6 @@ public:
 	FORCEINLINE float GetZoomedFOV() const { return ZoomedFOV; }
 	FORCEINLINE float GetZoomInterpSpeed() const { return ZoomInterpSpeed; }
 	FORCEINLINE int32 GetCarriedAmmo() const { return CarriedAmmo; }
+	FORCEINLINE EWeaponType GetWeaponType() const { return WeaponType; }
 	bool IsEmpty();
 };
