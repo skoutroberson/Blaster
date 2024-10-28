@@ -138,6 +138,8 @@ private:
 	UFUNCTION()
 	void OnRep_CombatState();
 
+	void UpdateWeaponAmmos();
+
 public:	
 
 	
