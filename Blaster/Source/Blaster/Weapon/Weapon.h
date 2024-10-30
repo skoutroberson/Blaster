@@ -141,6 +141,7 @@ private:
 	UFUNCTION()
 	void OnRep_CarriedAmmo();
 
+	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
 	EWeaponType WeaponType;
 
 public:	
