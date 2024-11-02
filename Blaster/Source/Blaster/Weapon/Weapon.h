@@ -33,6 +33,9 @@ public:
 	void SetAmmo(int32 NewAmmo) { Ammo = NewAmmo; }
 	void SetCarriedAmmo(int32 NewAmmo) { CarriedAmmo = NewAmmo; }
 
+	void AddQueryIgnoreActor(AActor* IgnoreActor);
+	void ClearQueryIgnoreActor();
+
 	/**
 	* Textures for the weapon crosshairs
 	*/
@@ -77,6 +80,8 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+	FCollisionQueryParams TraceQueryParams;
 
 	UFUNCTION()
 	virtual void OnSphereOverlap(

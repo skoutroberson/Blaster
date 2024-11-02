@@ -240,9 +240,23 @@ void AWeapon::Dropped()
 	SetWeaponState(EWeaponState::EWS_Dropped);
 	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
 	WeaponMesh->DetachFromComponent(DetachRules);
+	ClearQueryIgnoreActor();
 	SetOwner(nullptr);
 	BlasterOwnerCharacter = nullptr;
 	BlasterOwnerController = nullptr;
+}
+
+void AWeapon::AddQueryIgnoreActor(AActor* IgnoreActor)
+{
+	if (IgnoreActor)
+	{
+		TraceQueryParams.AddIgnoredActor(IgnoreActor);
+	}
+}
+
+void AWeapon::ClearQueryIgnoreActor()
+{
+	TraceQueryParams.ClearIgnoredActors();
 }
 
 bool AWeapon::IsEmpty()

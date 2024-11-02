@@ -167,6 +167,8 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 		Reload();
 	}
 
+	EquippedWeapon->AddQueryIgnoreActor(Character);
+
 	Character->GetCharacterMovement()->bOrientRotationToMovement = false;
 	Character->bUseControllerRotationYaw = true;
 }
