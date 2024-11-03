@@ -95,6 +95,10 @@ private:
 	float HUDMaxHealth;
 	float HUDScore;
 	int32 HUDDefeats;
+	float HUDCarriedAmmo;
+	bool bInitializeCarriedAmmo = false;
+	float HUDWeaponAmmo;
+	bool bInitializeWeaponAmmo = false;
 
 	float HighPingRunningTime = 0.f;
 

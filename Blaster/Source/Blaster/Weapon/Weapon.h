@@ -78,6 +78,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	class USoundCue* EquipSound;
 
+	bool bDestroyWeapon = false;
+
 protected:
 	virtual void BeginPlay() override;
 

@@ -52,6 +52,10 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void ShowSniperScopeWidget(bool bShowScope);
 
+	void UpdateHUDAmmo();
+
+	void SpawnDefaultWeapon();
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -174,6 +178,13 @@ private:
 
 	UPROPERTY()
 	class ABlasterPlayerState* BlasterPlayerState;
+
+	/**
+	* Default weapon
+	*/
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AWeapon> DefaultWeaponClass;
 
 public:	
 

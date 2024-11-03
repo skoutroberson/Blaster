@@ -16,6 +16,7 @@
 #include "Blaster/PlayerState/BlasterPlayerState.h"
 #include "Components/Image.h"
 #include "GameFramework/PlayerState.h"
+#include "Blaster/Weapon/Weapon.h"
 
 void ABlasterPlayerController::BeginPlay()
 {
@@ -225,6 +226,11 @@ void ABlasterPlayerController::SetHUDWeaponAmmo(int32 Ammo)
 		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
 		BlasterHUD->CharacterOverlay->WeaponAmmoAmount->SetText(FText::FromString(AmmoText));
 	}
+	else
+	{
+		bInitializeWeaponAmmo = true;
+		HUDWeaponAmmo = Ammo;
+	}
 }
 
 void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
@@ -237,6 +243,11 @@ void ABlasterPlayerController::SetHUDCarriedAmmo(int32 Ammo)
 	{
 		FString AmmoText = FString::Printf(TEXT("%d"), Ammo);
 		BlasterHUD->CharacterOverlay->CarriedAmmoAmount->SetText(FText::FromString(AmmoText));
+	}
+	else
+	{
+		bInitializeCarriedAmmo = true;
+		HUDCarriedAmmo = Ammo;
 	}
 }
 
@@ -327,6 +338,15 @@ void ABlasterPlayerController::PollInit()
 				SetHUDHealth(HUDHealth, HUDMaxHealth);
 				SetHUDScore(HUDScore);
 				SetHUDDefeats(HUDDefeats);
+
+				ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
+				if (BlasterCharacter && BlasterCharacter->GetEquippedWeapon())
+				{
+					BlasterCharacter->GetEquippedWeapon()->SetHUDAmmo();
+				}
+
+				if (bInitializeCarriedAmmo) SetHUDCarriedAmmo(HUDCarriedAmmo);
+				if (bInitializeWeaponAmmo) SetHUDWeaponAmmo(HUDWeaponAmmo);
 			}
 		}
 	}
