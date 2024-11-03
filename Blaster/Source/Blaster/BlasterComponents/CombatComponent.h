@@ -38,6 +38,9 @@ protected:
 	UFUNCTION()
 	void OnRep_EquippedWeapon();
 
+	UFUNCTION()
+	void OnRep_SecondaryWeapon();
+
 	void Fire();
 	void LocalFire(const FVector_NetQuantize& TraceHitTarget);
 
@@ -56,6 +59,14 @@ protected:
 
 	void HandleReload();
 
+	void DropEquippedWeapon();
+	void AttachActorToRightHand(AActor* ActorToAttach);
+	void AttachActorToBackpack(AActor* ActorToAttach);
+	void PlayEquipWeaponSound(AWeapon* WeaponToEquip);
+	void ReloadEmptyWeapon(); // called when equipping a weapon
+	void EquipPrimaryWeapon(AWeapon* WeaponToEquip);
+	void EquipSecondaryWeapon(AWeapon* WeaponToEquip);
+
 private:
 	UPROPERTY()
 	class ABlasterCharacter* Character;
@@ -66,6 +77,9 @@ private:
 
 	UPROPERTY(ReplicatedUsing = OnRep_EquippedWeapon)
 	AWeapon* EquippedWeapon;
+
+	UPROPERTY(ReplicatedUsing = OnRep_SecondaryWeapon)
+	AWeapon* SecondaryWeapon;
 
 	UPROPERTY(Replicated)
 	bool bAiming;
