@@ -319,6 +319,7 @@ void ABlasterCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ABlasterCharacter::FireButtonPressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ABlasterCharacter::FireButtonReleased);
 	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ABlasterCharacter::ReloadButtonPressed);
+	PlayerInputComponent->BindAction("SwitchWeapon", IE_Pressed, this, &ABlasterCharacter::SwitchWeaponPressed);
 }
 
 void ABlasterCharacter::PostInitializeComponents()
@@ -471,6 +472,30 @@ void ABlasterCharacter::ServerEquipButtonPressed_Implementation()
 	if (Combat)
 	{
 		Combat->EquipWeapon(OverlappingWeapon);
+	}
+}
+
+void ABlasterCharacter::SwitchWeaponPressed()
+{
+	if (bDisableGameplay) return;
+	if (Combat)
+	{
+		if (HasAuthority() && Combat->ShouldSwapWeapons())
+		{
+			Combat->SwapWeapons();
+		}
+		else
+		{
+			ServerSwitchWeaponPressed();
+		}
+	}
+}
+
+void ABlasterCharacter::ServerSwitchWeaponPressed_Implementation()
+{
+	if (Combat && Combat->ShouldSwapWeapons())
+	{
+		Combat->SwapWeapons();
 	}
 }
 

@@ -10,10 +10,12 @@
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
 {
-	EWS_Initial		UMETA(DisplayName = "Initial State"),
-	EWS_Equipped	UMETA(DisplayName = "Equipped"),
-	EWS_Dropped		UMETA(DisplayName = "Dropped"),
-	EWS_MAX			UMETA(DisplayName = "DefaultMAX"),
+	EWS_Initial				UMETA(DisplayName = "Initial State"),
+	EWS_Equipped			UMETA(DisplayName = "Equipped"),
+	EWS_EquippedSecondary	UMETA(DisplayName = "EquippedSecondary"),
+	EWS_Dropped				UMETA(DisplayName = "Dropped"),
+
+	EWS_MAX					UMETA(DisplayName = "DefaultMAX"),
 };
 
 UCLASS()
@@ -82,6 +84,10 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnWeaponStateSet();
+	virtual void OnEquipped();
+	virtual void OnDropped();
+	virtual void OnEquippedSecondary();
 
 	FCollisionQueryParams TraceQueryParams;
 

@@ -156,6 +156,6 @@ private:
 	void UpdateWeaponAmmos();
 
 public:	
-
+	bool ShouldSwapWeapons();
 	
 };
