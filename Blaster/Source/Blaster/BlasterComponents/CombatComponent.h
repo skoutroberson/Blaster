@@ -27,6 +27,7 @@ public:
 
 	void FireButtonPressed(bool bPressed);
 
+	bool bLocallyReloading = false;
 
 protected:
 	virtual void BeginPlay() override;

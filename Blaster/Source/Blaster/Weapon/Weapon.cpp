@@ -326,8 +326,3 @@ void AWeapon::ClearQueryIgnoreActor()
 {
 	TraceQueryParams.ClearIgnoredActors();
 }
-
-bool AWeapon::IsEmpty()
-{
-	return Ammo <= 0;
-}
