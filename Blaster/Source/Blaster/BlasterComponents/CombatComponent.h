@@ -166,6 +166,8 @@ private:
 
 	void UpdateWeaponAmmos();
 
+	int32 AmountToReload();
+
 public:	
 	bool ShouldSwapWeapons();
 	

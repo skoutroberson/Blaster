@@ -44,6 +44,7 @@ public:
 	void Dropped();
 	void SetAmmo(int32 NewAmmo) { Ammo = NewAmmo; }
 	void SetCarriedAmmo(int32 NewAmmo) { CarriedAmmo = NewAmmo; }
+	void AddAmmo(int32 AmmoToAdd);
 
 	void AddQueryIgnoreActor(AActor* IgnoreActor);
 	void ClearQueryIgnoreActor();
@@ -159,16 +160,23 @@ private:
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class ACasing> CasingClass;
 
-	UPROPERTY(ReplicatedUsing = OnRep_Ammo, EditAnywhere)
+	UPROPERTY(EditAnywhere)
 	int32 Ammo;
 
-	UFUNCTION()
-	void OnRep_Ammo();
+	UFUNCTION(Client, Reliable)
+	void ClientUpdateAmmo(int32 ServerAmmo);
+
+	UFUNCTION(Client, Reliable)
+	void ClientAddAmmo(int32 AmmoToAdd);
 
 	void SpendRound();
 
 	UPROPERTY(EditAnywhere)
 	int32 MagCapacity;
+
+	// The number of unprocessed server requests for Ammo
+	// Incremented in SpendRound, decremented in ClientUpdateAmmo
+	int32 Sequence = 0;
 
 	UPROPERTY()
 	class ABlasterCharacter* BlasterOwnerCharacter;

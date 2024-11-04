@@ -228,7 +228,7 @@ void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 {
-	if (WeaponToEquip == nullptr) return;
+	if (WeaponToEquip == nullptr || Character == nullptr) return;
 	DropEquippedWeapon();
 	EquippedWeapon = WeaponToEquip;
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
@@ -242,12 +242,13 @@ void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 
 void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 {
-	if (WeaponToEquip == nullptr) return;
+	if (WeaponToEquip == nullptr || Character == nullptr) return;
 	SecondaryWeapon = WeaponToEquip;
 	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
 	AttachActorToBackpack(WeaponToEquip);
 	SecondaryWeapon->SetOwner(Character);
 	PlayEquipWeaponSound(WeaponToEquip);
+	SecondaryWeapon->AddQueryIgnoreActor(Character);
 }
 
 void UCombatComponent::SwapWeapons()
@@ -323,15 +324,27 @@ void UCombatComponent::FinishReloading()
 
 void UCombatComponent::UpdateWeaponAmmos()
 {
-	if (EquippedWeapon == nullptr) return;
+	if (Character == nullptr || EquippedWeapon == nullptr) return;
 
-	const int TotalAmmo = EquippedWeapon->GetCarriedAmmo() + EquippedWeapon->GetAmmo();
-	const int NewAmmo = TotalAmmo >= EquippedWeapon->GetMagCapacity() ? EquippedWeapon->GetMagCapacity() : TotalAmmo;
-	const int NewCarriedAmmo = TotalAmmo - NewAmmo;
+	int32 ReloadAmount = AmountToReload();
 
-	EquippedWeapon->SetCarriedAmmo(NewCarriedAmmo);
-	EquippedWeapon->SetAmmo(NewAmmo);
-	EquippedWeapon->SetHUDAmmo();
+	EquippedWeapon->SetCarriedAmmo(EquippedWeapon->GetCarriedAmmo() - ReloadAmount);
+	
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(EquippedWeapon->GetCarriedAmmo());
+	}
+	EquippedWeapon->AddAmmo(ReloadAmount);
+}
+
+int32 UCombatComponent::AmountToReload()
+{
+	if (EquippedWeapon == nullptr) return 0;
+	int32 RoomInMag = EquippedWeapon->GetMagCapacity() - EquippedWeapon->GetAmmo();
+	int32 AmountCarried = EquippedWeapon->GetCarriedAmmo();
+	int32 Least = FMath::Min(RoomInMag, AmountCarried);
+	return FMath::Clamp(RoomInMag, 0, Least);
 }
 
 bool UCombatComponent::ShouldSwapWeapons()
