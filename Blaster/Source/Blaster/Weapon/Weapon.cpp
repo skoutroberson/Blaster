@@ -11,6 +11,7 @@
 #include "Casing.h"
 #include "Engine/SkeletalMeshSocket.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -34,6 +35,40 @@ AWeapon::AWeapon()
 	PickupWidget->SetupAttachment(RootComponent);
 }
 
+FVector AWeapon::TraceEndWithScatter(const FVector& HitTarget)
+{
+	
+	const USkeletalMeshSocket* MuzzleFlashSocket = GetWeaponMesh()->GetSocketByName("MuzzleFlash");
+	if (MuzzleFlashSocket == nullptr) return FVector();
+
+	FTransform SocketTransform = MuzzleFlashSocket->GetSocketTransform(GetWeaponMesh());
+	FVector TraceStart = SocketTransform.GetLocation();
+
+
+
+	FVector ToTargetNormalized = (HitTarget - TraceStart).GetSafeNormal();
+	FVector SphereCenter = TraceStart + ToTargetNormalized * DistanceToSphere;
+	FVector RandVec = UKismetMathLibrary::RandomUnitVector() * FMath::FRandRange(0.f, SphereRadius);
+	FVector EndLoc = SphereCenter + RandVec;
+	FVector ToEndLoc = EndLoc - TraceStart;
+
+	/*
+	DrawDebugSphere(
+		GetWorld(),
+		SphereCenter,
+		SphereRadius,
+		12,
+		FColor::Red,
+		true
+	);
+	DrawDebugSphere(GetWorld(), EndLoc, 4.f, 12, FColor::Orange, true);
+	DrawDebugLine(GetWorld(), TraceStart, FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size()), FColor::Cyan, true);
+	*/
+
+	return FVector(TraceStart + ToEndLoc * TRACE_LENGTH / ToEndLoc.Size());
+	
+}
+
 void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
@@ -44,13 +79,10 @@ void AWeapon::BeginPlay()
 	}
 	
 	// want to put this in NewHost() whenever the listen server host changes instead of just having this in BeginPlay()
-	if (HasAuthority())
-	{
-		AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-		AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
-		AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
-		AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOverlap);
-	}
+	AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
+	AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOverlap);
 }
 
 void AWeapon::Tick(float DeltaTime)
