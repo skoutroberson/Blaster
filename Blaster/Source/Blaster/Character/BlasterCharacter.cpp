@@ -22,6 +22,7 @@
 #include "Blaster/Weapon/WeaponTypes.h"
 #include "Components/BoxComponent.h"
 #include "Blaster/BlasterComponents/LagCompensationComponent.h"
+#include "PhysicsEngine/PhysicsAsset.h"
 
 ABlasterCharacter::ABlasterCharacter()
 {
@@ -147,6 +148,7 @@ ABlasterCharacter::ABlasterCharacter()
 	foot_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	HitCollisionBoxes.Add(FName("foot_r"), foot_r);
 
+	CacheCollisionCapsules();
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -960,4 +962,9 @@ bool ABlasterCharacter::IsLocallyReloading()
 {
 	if (Combat == nullptr) false;
 	return Combat->bLocallyReloading;
+}
+
+void ABlasterCharacter::CacheCollisionCapsules()
+{
+	
 }

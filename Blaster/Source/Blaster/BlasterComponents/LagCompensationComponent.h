@@ -22,6 +22,25 @@ struct FBoxInformation
 };
 
 USTRUCT(BlueprintType)
+struct FCapsuleInformation
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FVector Location;
+
+	UPROPERTY()
+	FRotator Rotation;
+
+	UPROPERTY()
+	float Radius;
+
+	UPROPERTY()
+	float Length;
+
+};
+
+USTRUCT(BlueprintType)
 struct FFramePackage
 {
 	GENERATED_BODY()
@@ -31,6 +50,29 @@ struct FFramePackage
 
 	UPROPERTY()
 	TMap<FName, FBoxInformation> HitBoxInfo;
+
+	UPROPERTY()
+	ABlasterCharacter* Character;
+};
+
+USTRUCT()
+struct FCapsuleInformations
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TArray<FCapsuleInformation> CapsuleInfos;
+};
+
+USTRUCT(BlueprintType)
+struct FFramePackageCapsule
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	float Time;
+	UPROPERTY()
+	TMap<FName, FCapsuleInformations> HitCapsulesInfo;
 
 	UPROPERTY()
 	ABlasterCharacter* Character;
@@ -71,10 +113,14 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	void ShowFramePackage(const FFramePackage& Package, const FColor& Color);
 
+	void ShowFramePackageCapsule(const FFramePackageCapsule& Package, const FColor& Color);
+
 	FServerSideRewindResult ServerSideRewind(class ABlasterCharacter* HitCharacter, 
 		const FVector_NetQuantize& TraceStart, 
 		const FVector_NetQuantize& HitLocation, 
 		float HitTime);
+
+
 
 	FShotgunServerSideRewindResult ShotgunServerSideRewind(
 		const TArray<ABlasterCharacter*>& HitCharacters,
@@ -103,7 +149,9 @@ public:
 protected:
 	virtual void BeginPlay() override;	
 	void SaveFramePackage(FFramePackage& Package);
+	void SaveFramePackageCapsule(FFramePackageCapsule& Package);
 	FFramePackage InterpBetweenFrames(const FFramePackage& OlderFrame, const FFramePackage& YoungerFrame, float HitTime);
+	FFramePackageCapsule InterpBetweenFramesCapsule(const FFramePackageCapsule& OlderFrame, const FFramePackageCapsule& YoungerFrame, float HitTime);
 
 	FServerSideRewindResult ConfirmHit(
 		const FFramePackage& Package, 
@@ -111,12 +159,23 @@ protected:
 		const FVector_NetQuantize& TraceStart, 
 		const FVector_NetQuantize& HitLocation);
 
+	FServerSideRewindResult ConfirmHitCapsule(
+		const FFramePackageCapsule& Package,
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize& HitLocation);
+
 	void CacheBoxPositions(ABlasterCharacter* HitCharacter, FFramePackage& OutFramePackage);
+	void CacheCapsulePositions(ABlasterCharacter* HitCharacter, FFramePackageCapsule& OutFramePackage);
 	void MoveBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
+	void MoveCapsules(ABlasterCharacter* HitCharacter, const FFramePackageCapsule& Package);
 	void ResetHitBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
+	void ResetHitCapsules(ABlasterCharacter* HitCharacter, const FFramePackageCapsule& Package);
 	void EnableCharacterMeshCollision(ABlasterCharacter* HitCharacter, ECollisionEnabled::Type CollisionEnabled);
 	void SaveFramePackage();
+	void SaveFramePackageCapsule();
 	FFramePackage GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime);
+	FFramePackageCapsule GetFrameToCheckCapsule(ABlasterCharacter* HitCharacter, float HitTime);
 
 	/**
 	* Shotgun
@@ -128,6 +187,8 @@ protected:
 		const TArray<FVector_NetQuantize>& HitLocations
 		);
 
+	void DrawDebugCapsules();
+
 private:
 
 	UPROPERTY()
@@ -137,12 +198,10 @@ private:
 	class ABlasterPlayerController* Controller;
 
 	TDoubleLinkedList<FFramePackage> FrameHistory;
+	TDoubleLinkedList<FFramePackageCapsule> FrameHistoryCapsule;
 
 	UPROPERTY(EditAnywhere)
-	float MaxRecordTime = 2.f;
-
-	UPROPERTY()
-	AWeapon* DamageCauserWeapon;
+	float MaxRecordTime = 0.5f;
 
 public:
 

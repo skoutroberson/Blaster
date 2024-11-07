@@ -7,6 +7,8 @@
 #include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Blaster/BlasterTypes/CombatState.h"
+//E:\Epic Games\UE_5.4\Engine\Source\Runtime\Engine\Classes\PhysicsEngine\SphylElem.h
+//#include "Runtime\Engine\Classes\PhysicsEngine\SphylElem.h"
 #include "BlasterCharacter.generated.h"
 
 UENUM(BlueprintType)
@@ -58,6 +60,14 @@ public:
 
 	UPROPERTY()
 	TMap<FName, class UBoxComponent*> HitCollisionBoxes;
+
+	//UPROPERTY()
+	//TMap<FName, class UCapsuleComponent
+
+	//UPROPERTY()
+	//TArray<class UKSphylElem&> HitCollisionCapsules;
+
+	void CacheCollisionCapsules();
 
 protected:
 	virtual void BeginPlay() override;
