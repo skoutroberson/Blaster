@@ -48,7 +48,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 				BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(InstigatorController) : BlasterOwnerController;
 				if (BlasterOwnerController && BlasterOwnerCharacter && BlasterOwnerCharacter->GetLagCompensation() && BlasterOwnerCharacter->IsLocallyControlled())
 				{
-					BlasterOwnerCharacter->GetLagCompensation()->ServerScoreRequest(
+					BlasterOwnerCharacter->GetLagCompensation()->ServerScoreRequestCapsule(
 						BlasterCharacter,
 						Start,
 						HitTarget,

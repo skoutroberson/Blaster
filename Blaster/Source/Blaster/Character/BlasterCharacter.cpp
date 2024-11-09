@@ -147,6 +147,31 @@ ABlasterCharacter::ABlasterCharacter()
 	foot_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	HitCollisionBoxes.Add(FName("foot_r"), foot_r);
 
+	InitializeHitboxTypesMap();
+}
+
+void ABlasterCharacter::InitializeHitboxTypesMap()
+{
+	/*
+	HitboxTypes.Add(FName("head"), EHitbox::EH_Head);
+	HitboxTypes.Add(FName("neck_01"), EHitbox::EH_Head);
+	HitboxTypes.Add(FName("pelvis"), EHitbox::EH_Body);
+	HitboxTypes.Add(FName("spine_01"), EHitbox::EH_Body);
+	HitboxTypes.Add(FName("spine_02"), EHitbox::EH_Body);
+	HitboxTypes.Add(FName("spine_03"), EHitbox::EH_Body);
+	HitboxTypes.Add(FName("upperarm_l"), EHitbox::EH_Body);
+	HitboxTypes.Add(FName("upperarm_r"), EHitbox::EH_Body);
+	HitboxTypes.Add(FName("lowerarm_l"), EHitbox::EH_Body);
+	HitboxTypes.Add(FName("lowerarm_r"), EHitbox::EH_Body);
+	HitboxTypes.Add(FName("hand_l"), EHitbox::EH_Body);
+	HitboxTypes.Add(FName("hand_r"), EHitbox::EH_Body);
+	HitboxTypes.Add(FName("thigh_l"), EHitbox::EH_Legs);
+	HitboxTypes.Add(FName("thigh_r"), EHitbox::EH_Legs);
+	HitboxTypes.Add(FName("calf_l"), EHitbox::EH_Legs);
+	HitboxTypes.Add(FName("calf_r"), EHitbox::EH_Legs);
+	HitboxTypes.Add(FName("foot_l"), EHitbox::EH_Legs);
+	HitboxTypes.Add(FName("foot_r"), EHitbox::EH_Legs);
+	*/
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

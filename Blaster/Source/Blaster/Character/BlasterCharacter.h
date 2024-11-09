@@ -7,6 +7,7 @@
 #include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Blaster/BlasterTypes/CombatState.h"
+//#include "Blaster/BlasterTypes/Hitbox.h"
 #include "BlasterCharacter.generated.h"
 
 UENUM(BlueprintType)
@@ -58,6 +59,9 @@ public:
 
 	UPROPERTY()
 	TMap<FName, class UBoxComponent*> HitCollisionBoxes;
+
+	//UPROPERTY()
+	//TMap<FName, EHitbox> HitboxTypes; // maps bone names to EHitbox type
 
 protected:
 	virtual void BeginPlay() override;
@@ -256,6 +260,8 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<AWeapon> DefaultWeaponClass;
+
+	void InitializeHitboxTypesMap();
 
 public:	
 
