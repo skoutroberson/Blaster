@@ -146,8 +146,6 @@ ABlasterCharacter::ABlasterCharacter()
 	foot_r->SetupAttachment(GetMesh(), FName("foot_r"));
 	foot_r->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	HitCollisionBoxes.Add(FName("foot_r"), foot_r);
-
-	InitializeHitboxTypesMap();
 }
 
 void ABlasterCharacter::InitializeHitboxTypesMap()
@@ -985,4 +983,39 @@ bool ABlasterCharacter::IsLocallyReloading()
 {
 	if (Combat == nullptr) false;
 	return Combat->bLocallyReloading;
+}
+
+void ABlasterCharacter::SpawnBlood(const FVector Location, const FVector Normal, EWeaponType WeaponType)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Spawn blood"));
+	if (BloodParticles)
+	{
+		FTransform BloodTransform;
+		BloodTransform.SetLocation(Location);
+		BloodTransform.SetRotation(-Normal.ToOrientationQuat());
+		BloodTransform.SetScale3D(FVector::One());
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticles, BloodTransform);
+	}
+	if (ImpactBodySound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactBodySound, Location);
+	}
+}
+
+void ABlasterCharacter::Multicast_SpawnBlood_Implementation(const FVector_NetQuantize Location, const FVector_NetQuantize Normal, EWeaponType WeaponType)
+{
+	// need to line trace through location from TraceStart to get correct blood location/normal I think
+	if (BloodParticles)
+	{
+		FTransform BloodTransform;
+		BloodTransform.SetLocation(Location);
+		BloodTransform.SetRotation(Normal.ToOrientationQuat());
+		BloodTransform.SetScale3D(FVector::One());
+		UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BloodParticles, BloodTransform);
+	}
+	if (ImpactBodySound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, ImpactBodySound, Location);
+	}
+	
 }

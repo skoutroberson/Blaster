@@ -60,6 +60,11 @@ public:
 	UPROPERTY()
 	TMap<FName, class UBoxComponent*> HitCollisionBoxes;
 
+	void SpawnBlood(const FVector Location, const FVector Normal, EWeaponType WeaponType);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void Multicast_SpawnBlood(const FVector_NetQuantize Location, const FVector_NetQuantize Normal, EWeaponType WeaponType);
+
 	//UPROPERTY()
 	//TMap<FName, EHitbox> HitboxTypes; // maps bone names to EHitbox type
 
@@ -262,6 +267,14 @@ private:
 	TSubclassOf<AWeapon> DefaultWeaponClass;
 
 	void InitializeHitboxTypesMap();
+
+	// blood spray
+
+	UPROPERTY(EditAnywhere)
+	UParticleSystem* BloodParticles;
+
+	UPROPERTY(EditAnywhere)
+	class USoundCue* ImpactBodySound;
 
 public:	
 

@@ -61,6 +61,10 @@ struct FHitInfo
 	// used for spawning blood impact particles
 	UPROPERTY()
 	FVector Location;
+
+	UPROPERTY()
+	FVector Normal;
+
 	// used to determine how much damage to apply to player
 	UPROPERTY()
 	EHitbox HitType = EHitbox::EH_None;
@@ -118,6 +122,9 @@ struct FServerSideRewindResultCapsule
 
 	UPROPERTY()
 	FVector HitLocation;
+
+	UPROPERTY()
+	FVector HitNormal;
 };
 
 USTRUCT(BlueprintType)
@@ -259,13 +266,11 @@ private:
 	// Returns first intersection point from a line intersecting with a sphere. Assumes that the line does intersect with the sphere.
 	inline FVector const FirstIntersectionPoint(const FVector& LineStart, const FVector& LineEnd, const FVector& Center, const float Radius);
 
-	FHitInfo TraceAgainstCapsules(const FVector& TraceStart, const FVector& TraceEnd, const ABlasterCharacter* HitCharacter);
-
 	FHitInfo TraceAgainstCapsules(const FFramePackageCapsule& Package, const ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector& TraceEnd);
 
 	// Maximum number of hits to check in TraceAgainstCapsules
 	UPROPERTY(EditDefaultsOnly)
-	uint8 MaxSpheresHit = 5;
+	uint8 MaxSpheresHit = 4;
 
 public:
 

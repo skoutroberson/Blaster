@@ -237,6 +237,7 @@ void ULagCompensationComponent::ServerScoreRequestCapsule_Implementation(ABlaste
 			DamageCauser,
 			UDamageType::StaticClass()
 		);
+		HitCharacter->Multicast_SpawnBlood(Confirm.HitLocation, -Confirm.HitNormal, DamageCauser->GetWeaponType());
 	}
 }
 
@@ -399,8 +400,11 @@ FServerSideRewindResultCapsule ULagCompensationComponent::ConfirmHitCapsule(cons
 	const FVector TraceEnd = TraceStart + (HitLocation - TraceStart) * 1.25f;
 	FHitInfo HitInfo = TraceAgainstCapsules(Package, HitCharacter, TraceStart, TraceEnd);
 
+	DrawDebugPoint(GetWorld(), HitInfo.Location, 4.f, FColor::Red, true);
+	DrawDebugLine(GetWorld(), HitInfo.Location, HitInfo.Location + HitInfo.Normal * 10.f, FColor::Green, true);
+
 	EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::QueryAndPhysics);
-	return FServerSideRewindResultCapsule{HitInfo.HitType, HitInfo.Location};
+	return FServerSideRewindResultCapsule{HitInfo.HitType, HitInfo.Location, HitInfo.Normal};
 }
 
 FShotgunServerSideRewindResult ULagCompensationComponent::ShotgunConfirmHit(const TArray<FFramePackage>& FramePackages, const FVector_NetQuantize& TraceStart, const TArray<FVector_NetQuantize>& HitLocations)
@@ -813,81 +817,12 @@ inline FVector const ULagCompensationComponent::FirstIntersectionPoint(const FVe
 	return ClosestPoint - Dir * IntersectionLength;
 }
 
-FHitInfo ULagCompensationComponent::TraceAgainstCapsules(const FVector& TraceStart, const FVector& TraceEnd, const ABlasterCharacter* HitCharacter)
-{
-	if (HitCharacter == nullptr || HitCharacter->GetMesh() == nullptr || HitCharacter->GetMesh()->GetPhysicsAsset() == nullptr) return FHitInfo{};
-
-	FHitInfo HitInfo;
-	uint8 HitSpheres = 0;
-
-	const FVector Dir = (TraceEnd - TraceStart).GetSafeNormal();
-	const float Length = (TraceEnd - TraceStart).Size();
-
-	for (auto& x : HitCharacter->GetMesh()->GetPhysicsAsset()->SkeletalBodySetups)
-	{
-		auto BName = x->BoneName;
-		auto BoneWorldTransform = HitCharacter->GetMesh()->GetBoneTransform(HitCharacter->GetMesh()->GetBoneIndex(BName));
-
-		const EHitbox BoneHitboxType = HitboxTypes.Contains(BName) ? HitboxTypes[BName] : EHitbox::EH_None;
-
-		for (auto& y : x->AggGeom.SphylElems)
-		{
-			auto LocTransform = y.GetTransform();
-			auto WorldTransform = LocTransform * BoneWorldTransform;
-			/*
-			DrawDebugCapsule(
-				GetWorld(),
-				WorldTransform.GetLocation(),
-				y.Length / 2 + y.Radius,
-				y.Radius, WorldTransform.GetRotation(),
-				FColor::Red
-			);*/
-			const float Radius = y.GetScaledRadius(WorldTransform.GetScale3D());
-			const FVector CapsuleCenter = WorldTransform.GetLocation();
-			const float CapsuleLength = y.GetScaledHalfLength(WorldTransform.GetScale3D()) - Radius;
-			const FVector CapsuleAxis = WorldTransform.GetUnitAxis(EAxis::Z);
-			const FVector A = CapsuleCenter + CapsuleAxis * CapsuleLength;
-			const FVector B = CapsuleCenter - CapsuleAxis * CapsuleLength;
-			DrawDebugLine(GetWorld(), A, B, FColor::Green);
-
-			// convert capsule to spheres for optimized collision check
-			TArray<FSphereInfo> Spheres;
-			CapsuleToSpheres(A, B, Radius, CapsuleLength, Spheres);
-			
-			// check if weapon trace intersects with each sphere of a capsule
-			for (auto& Sphere : Spheres)
-			{
-				if (LineSphereIntersection(TraceStart, Dir, Length, Sphere.Center, Sphere.Radius))
-				{
-					++HitSpheres;
-					// get intersection point to spawn impact particles at this location
-					const FVector IntersectionPoint = FirstIntersectionPoint(TraceStart, TraceEnd, Sphere.Center, Sphere.Radius);
-					//DrawDebugSphere(GetWorld(), FVector(Sphere.Center), Sphere.Radius, 20, FColor::White, true);
-					//DrawDebugPoint(GetWorld(), IntersectionPoint, 4.f, FColor::Red, true);
-
-					if (HitInfo.HitType < BoneHitboxType)
-					{
-						HitInfo.Location = IntersectionPoint;
-						HitInfo.HitType = HitboxTypes[BName];
-					}
-					if (HitSpheres >= MaxSpheresHit)
-					{
-						return HitInfo;
-					}
-				}
-			}
-		}
-	}
-	return HitInfo;
-}
-
 FHitInfo ULagCompensationComponent::TraceAgainstCapsules(const FFramePackageCapsule& Package, const ABlasterCharacter* HitCharacter, const FVector_NetQuantize& TraceStart, const FVector& TraceEnd)
 {
 	if (HitCharacter == nullptr || HitCharacter->GetMesh() == nullptr || HitCharacter->GetMesh()->GetPhysicsAsset() == nullptr) return FHitInfo();
 	
 	FHitInfo HitInfo;
 	uint8 HitSpheres = 0;
-
 	const FVector Dir = (TraceEnd - TraceStart).GetSafeNormal();
 	const float Length = (TraceEnd - TraceStart).Size();
 
@@ -897,21 +832,30 @@ FHitInfo ULagCompensationComponent::TraceAgainstCapsules(const FFramePackageCaps
 		TArray<FSphereInfo> Spheres;
 		CapsuleToSpheres(Capsule.A, Capsule.B, Capsule.Radius, Capsule.Length, Spheres);
 
-		// check if weapon trace intersects with each sphere of a capsule
 		for (auto& Sphere : Spheres)
 		{
+			// check if weapon trace intersects with each sphere of this capsule
 			if (LineSphereIntersection(TraceStart, Dir, Length, Sphere.Center, Sphere.Radius))
 			{
+				DrawDebugSphere(GetWorld(), Sphere.Center, Sphere.Radius, 12, FColor::White, true);
 				++HitSpheres;
-				// get intersection point to spawn impact particles at this location
 				const FVector IntersectionPoint = FirstIntersectionPoint(TraceStart, TraceEnd, Sphere.Center, Sphere.Radius);
-				DrawDebugSphere(GetWorld(), FVector(Sphere.Center), Sphere.Radius, 20, FColor::White, true);
-				DrawDebugPoint(GetWorld(), IntersectionPoint, 4.f, FColor::Red, true);
-
 				if (HitInfo.HitType < Capsule.HitboxType)
 				{
 					HitInfo.Location = IntersectionPoint;
 					HitInfo.HitType = Capsule.HitboxType;
+					HitInfo.Normal = (HitInfo.Location - Sphere.Center) / Sphere.Radius;
+				}
+				else if (HitInfo.HitType == Capsule.HitboxType)
+				{
+					const float Dist1 = FVector::DistSquared(HitInfo.Location, TraceStart);
+					const float Dist2 = FVector::DistSquared(IntersectionPoint, TraceStart);
+					if (Dist1 > Dist2)
+					{
+						HitInfo.Location = IntersectionPoint;
+						HitInfo.HitType = Capsule.HitboxType;
+						HitInfo.Normal = (HitInfo.Location - Sphere.Center) / Sphere.Radius;
+					}
 				}
 				if (HitSpheres >= MaxSpheresHit)
 				{
@@ -922,5 +866,3 @@ FHitInfo ULagCompensationComponent::TraceAgainstCapsules(const FFramePackageCaps
 	}
 	return HitInfo;
 }
-
-

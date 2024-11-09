@@ -61,6 +61,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 		}
 		if (ImpactParticles)
 		{
+			// if trace hit player, spawn blood
 			UGameplayStatics::SpawnEmitterAtLocation(
 				GetWorld(),
 				ImpactParticles,
