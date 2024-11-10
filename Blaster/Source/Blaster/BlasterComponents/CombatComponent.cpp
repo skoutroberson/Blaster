@@ -302,6 +302,7 @@ void UCombatComponent::Reload()
 void UCombatComponent::ServerReload_Implementation()
 {
 	if (Character == nullptr || EquippedWeapon == nullptr) return;
+
 	CombatState = ECombatState::ECS_Reloading;
 	if(!Character->IsLocallyControlled()) HandleReload();
 }
@@ -319,7 +320,7 @@ void UCombatComponent::FinishReloading()
 	{
 		Fire();
 	}
-	if (Character->GetEquippedWeapon())
+	if (Character->GetEquippedWeapon()) //
 	{
 		Character->GetEquippedWeapon()->SetHUDAmmo();
 	}

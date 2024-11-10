@@ -151,6 +151,9 @@ public:
 	void ShowFramePackage(const FFramePackage& Package, const FColor& Color);
 	void ShowFramePackageCapsule(const FFramePackageCapsule& Package, const FColor& Color);
 
+	/**
+	* Hitscan
+	*/
 	FServerSideRewindResult ServerSideRewind(class ABlasterCharacter* HitCharacter, 
 		const FVector_NetQuantize& TraceStart, 
 		const FVector_NetQuantize& HitLocation, 
@@ -163,6 +166,17 @@ public:
 		float HitTime
 	);
 
+	/**
+	* Projectile
+	*/
+	FServerSideRewindResult ProjectileServerSideRewind(ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime);
+
+	/**
+	* Shotgun
+	*/
 	FShotgunServerSideRewindResult ShotgunServerSideRewind(
 		const TArray<ABlasterCharacter*>& HitCharacters,
 		const FVector_NetQuantize& TraceStart,
@@ -188,6 +202,14 @@ public:
 	);
 
 	UFUNCTION(Server, Reliable)
+	void ProjectileServerScoreRequest(
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime
+	);
+
+	UFUNCTION(Server, Reliable)
 	void ShotgunServerScoreRequest(
 		const TArray<ABlasterCharacter*>& HitCharacters,
 		const FVector_NetQuantize& TraceStart,
@@ -202,20 +224,6 @@ protected:
 	void SaveFramePackageCapsule(FFramePackageCapsule& Package);
 	FFramePackage InterpBetweenFrames(const FFramePackage& OlderFrame, const FFramePackage& YoungerFrame, float HitTime);
 	FFramePackageCapsule InterpBetweenFramesCapsule(const FFramePackageCapsule& OlderFrame, const FFramePackageCapsule& YoungerFrame, float HitTime);
-
-	FServerSideRewindResult ConfirmHit(
-		const FFramePackage& Package, 
-		ABlasterCharacter* HitCharacter, 
-		const FVector_NetQuantize& TraceStart, 
-		const FVector_NetQuantize& HitLocation);
-
-	FServerSideRewindResultCapsule ConfirmHitCapsule(
-		const FFramePackageCapsule& Package,
-		ABlasterCharacter* HitCharacter,
-		const FVector_NetQuantize& TraceStart,
-		const FVector_NetQuantize& HitLocation
-	);
-
 	void CacheBoxPositions(ABlasterCharacter* HitCharacter, FFramePackage& OutFramePackage);
 	void MoveBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
 	void ResetHitBoxes(ABlasterCharacter* HitCharacter, const FFramePackage& Package);
@@ -224,6 +232,34 @@ protected:
 	void SaveFramePackageCapsule();
 	FFramePackage GetFrameToCheck(ABlasterCharacter* HitCharacter, float HitTime);
 	FFramePackageCapsule GetFrameToCheckCapsule(ABlasterCharacter* HitCharacter, float HitTime);
+
+	/**
+	* Hitscan
+	*/
+	FServerSideRewindResult ConfirmHit(
+		const FFramePackage& Package,
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize& HitLocation
+	);
+
+	FServerSideRewindResultCapsule ConfirmHitCapsule(
+		const FFramePackageCapsule& Package,
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize& HitLocation
+	);
+
+	/**
+	* Projectile
+	*/
+	FServerSideRewindResult ProjectileConfirmHit(
+		const FFramePackage& Package,
+		ABlasterCharacter* HitCharacter,
+		const FVector_NetQuantize& TraceStart,
+		const FVector_NetQuantize100& InitialVelocity,
+		float HitTime
+	);
 
 	/**
 	* Shotgun
@@ -260,7 +296,7 @@ private:
 
 	int SphereCount = 0;
 
-	// copied from Vector.h to avoid having to cast to FVector3f every time we call this
+	// copied from Vector.h to avoid having to cast FVector to FVector3f every time we call this
 	inline bool LineSphereIntersection(const FVector& Start, const FVector& Dir, float Length, const FVector& Origin, float Radius);
 
 	// Returns first intersection point from a line intersecting with a sphere. Assumes that the line does intersect with the sphere.

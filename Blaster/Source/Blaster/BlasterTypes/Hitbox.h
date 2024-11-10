@@ -3,8 +3,6 @@
 #include "CoreMinimal.h"
 #include "CoreTypes.h"
 
-
-
 UENUM(BlueprintType)
 enum class EHitbox : uint8
 {
@@ -20,7 +18,7 @@ enum class EHitbox : uint8
 	EH_MAX			UMETA(DisplayName = "DefaultMAX")
 };
 
-static TMap<FName, EHitbox> HitboxTypes =
+const static TMap<FName, EHitbox> HitboxTypes =
 {
 	{FName("head"), EHitbox::EH_Head },
 	{FName("neck_01"), EHitbox::EH_Head },
@@ -42,14 +40,22 @@ static TMap<FName, EHitbox> HitboxTypes =
 	{FName("foot_r"), EHitbox::EH_Legs }
 };
 
-inline float GetDamage(EHitbox Type, float WeaponDamage)
+#define LEG_DAMAGE_MULTIPLIER 0.85f
+#define BODY_DAMAGE_MULTIPLIER 1.25f
+#define HEAD_DAMAGE_MULTIPLIER 5.f
+
+struct FHitbox
 {
-	float Damage = WeaponDamage;
-	if (Type == EHitbox::EH_Legs) { Damage = WeaponDamage * 0.85f; }
-	else if (Type == EHitbox::EH_Body) { Damage = WeaponDamage * 1.25f; }
-	else if (Type == EHitbox::EH_Head) { Damage = WeaponDamage * 5.f; }
-	return Damage;
-}
+	static inline float GetDamage(EHitbox Type, float WeaponDamage)
+	{
+		float Damage = WeaponDamage;
+		if (Type == EHitbox::EH_Legs) { Damage = WeaponDamage * LEG_DAMAGE_MULTIPLIER; }
+		else if (Type == EHitbox::EH_Body) { Damage = WeaponDamage * BODY_DAMAGE_MULTIPLIER; }
+		else if (Type == EHitbox::EH_Head) { Damage = WeaponDamage * HEAD_DAMAGE_MULTIPLIER; }
+		return Damage;
+	}
+};
+
 
 class BLASTER_API Hitbox
 {
