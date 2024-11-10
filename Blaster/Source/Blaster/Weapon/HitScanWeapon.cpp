@@ -57,7 +57,6 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 					);
 				}
 			}
-			
 		}
 		if (ImpactParticles)
 		{

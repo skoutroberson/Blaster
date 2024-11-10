@@ -42,6 +42,15 @@ static TMap<FName, EHitbox> HitboxTypes =
 	{FName("foot_r"), EHitbox::EH_Legs }
 };
 
+inline float GetDamage(EHitbox Type, float WeaponDamage)
+{
+	float Damage = WeaponDamage;
+	if (Type == EHitbox::EH_Legs) { Damage = WeaponDamage * 0.85f; }
+	else if (Type == EHitbox::EH_Body) { Damage = WeaponDamage * 1.25f; }
+	else if (Type == EHitbox::EH_Head) { Damage = WeaponDamage * 5.f; }
+	return Damage;
+}
+
 class BLASTER_API Hitbox
 {
 	

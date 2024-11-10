@@ -232,7 +232,7 @@ void ULagCompensationComponent::ServerScoreRequestCapsule_Implementation(ABlaste
 	{
 		UGameplayStatics::ApplyDamage(
 			HitCharacter,
-			DamageCauser->GetDamage(),
+			GetDamage(Confirm.HitType, DamageCauser->GetDamage()),
 			Character->Controller,
 			DamageCauser,
 			UDamageType::StaticClass()
@@ -399,9 +399,6 @@ FServerSideRewindResultCapsule ULagCompensationComponent::ConfirmHitCapsule(cons
 
 	const FVector TraceEnd = TraceStart + (HitLocation - TraceStart) * 1.25f;
 	FHitInfo HitInfo = TraceAgainstCapsules(Package, HitCharacter, TraceStart, TraceEnd);
-
-	DrawDebugPoint(GetWorld(), HitInfo.Location, 4.f, FColor::Red, true);
-	DrawDebugLine(GetWorld(), HitInfo.Location, HitInfo.Location + HitInfo.Normal * 10.f, FColor::Green, true);
 
 	EnableCharacterMeshCollision(HitCharacter, ECollisionEnabled::QueryAndPhysics);
 	return FServerSideRewindResultCapsule{HitInfo.HitType, HitInfo.Location, HitInfo.Normal};
@@ -622,7 +619,7 @@ void ULagCompensationComponent::SaveFramePackageCapsule()
 		FFramePackageCapsule ThisFrame;
 		SaveFramePackageCapsule(ThisFrame);
 		FrameHistoryCapsule.AddHead(ThisFrame);
-		//ShowFramePackageCapsule(ThisFrame, FColor::Red);
+		ShowFramePackageCapsule(ThisFrame, FColor::Red);
 	}
 }
 
@@ -837,7 +834,6 @@ FHitInfo ULagCompensationComponent::TraceAgainstCapsules(const FFramePackageCaps
 			// check if weapon trace intersects with each sphere of this capsule
 			if (LineSphereIntersection(TraceStart, Dir, Length, Sphere.Center, Sphere.Radius))
 			{
-				DrawDebugSphere(GetWorld(), Sphere.Center, Sphere.Radius, 12, FColor::White, true);
 				++HitSpheres;
 				const FVector IntersectionPoint = FirstIntersectionPoint(TraceStart, TraceEnd, Sphere.Center, Sphere.Radius);
 				if (HitInfo.HitType < Capsule.HitboxType)
