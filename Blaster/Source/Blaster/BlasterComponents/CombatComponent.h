@@ -172,6 +172,10 @@ private:
 
 	void UpdateWeaponAmmos();
 
+	void UpdateCarriedAmmo();
+
+	void UpdateAmmoValues();
+
 	int32 AmountToReload();
 
 public:	

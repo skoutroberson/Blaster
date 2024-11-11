@@ -12,6 +12,7 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Blaster/BlasterComponents/CombatComponent.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -115,6 +116,11 @@ void AWeapon::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	}
 }
 
+void AWeapon::ClientUpdateAmmoOnPickup_Implementation(int32 ServerAmmo)
+{
+	Ammo = ServerAmmo;
+}
+
 void AWeapon::SpendRound()
 {
 	Ammo = FMath::Clamp(Ammo - 1, 0, MagCapacity);
@@ -123,7 +129,7 @@ void AWeapon::SpendRound()
 	{
 		ClientUpdateAmmo(Ammo);
 	}
-	else
+	else if(BlasterOwnerCharacter && BlasterOwnerCharacter->IsLocallyControlled())
 	{
 		++Sequence;
 	}
@@ -188,10 +194,10 @@ void AWeapon::SetHUDAmmo()
 void AWeapon::OnRep_CarriedAmmo()
 {
 	BlasterOwnerCharacter = BlasterOwnerCharacter == nullptr ? Cast<ABlasterCharacter>(GetOwner()) : BlasterOwnerCharacter;
-	if (BlasterOwnerCharacter)
+	if (BlasterOwnerCharacter && BlasterOwnerCharacter->GetEquippedWeapon())
 	{
 		BlasterOwnerController = BlasterOwnerController == nullptr ? Cast<ABlasterPlayerController>(BlasterOwnerCharacter->Controller) : BlasterOwnerController;
-		if (BlasterOwnerController)
+		if (BlasterOwnerController && BlasterOwnerCharacter->GetEquippedWeapon() == this)
 		{
 			BlasterOwnerController->SetHUDCarriedAmmo(CarriedAmmo);
 		}
@@ -344,7 +350,7 @@ void AWeapon::Dropped()
 	SetWeaponState(EWeaponState::EWS_Dropped);
 	FDetachmentTransformRules DetachRules(EDetachmentRule::KeepWorld, true);
 	WeaponMesh->DetachFromComponent(DetachRules);
-	ClearQueryIgnoreActor();
+	//ClearQueryIgnoreActor();
 	SetOwner(nullptr);
 	BlasterOwnerCharacter = nullptr;
 	BlasterOwnerController = nullptr;

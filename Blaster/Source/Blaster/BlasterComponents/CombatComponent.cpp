@@ -236,8 +236,9 @@ void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 	EquippedWeapon->SetOwner(Character);
 	EquippedWeapon->SetHUDAmmo();
 	PlayEquipWeaponSound(WeaponToEquip);
+	WeaponToEquip->ClientUpdateAmmoOnPickup(WeaponToEquip->GetAmmo());
 	ReloadEmptyWeapon();
-	EquippedWeapon->AddQueryIgnoreActor(Character);
+	//EquippedWeapon->AddQueryIgnoreActor(Character);
 }
 
 void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
@@ -248,12 +249,13 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 	AttachActorToBackpack(WeaponToEquip);
 	SecondaryWeapon->SetOwner(Character);
 	PlayEquipWeaponSound(WeaponToEquip);
-	SecondaryWeapon->AddQueryIgnoreActor(Character);
+	WeaponToEquip->ClientUpdateAmmoOnPickup(WeaponToEquip->GetAmmo());
+	//SecondaryWeapon->AddQueryIgnoreActor(Character);
 }
 
 void UCombatComponent::SwapWeapons()
 {
-	if (CombatState != ECombatState::ECS_Unoccupied) return;
+	if (CombatState != ECombatState::ECS_Unoccupied || Character == nullptr || !Character->HasAuthority()) return;
 
 	AWeapon* TempWeapon = EquippedWeapon;
 	EquippedWeapon = SecondaryWeapon;
@@ -320,10 +322,12 @@ void UCombatComponent::FinishReloading()
 	{
 		Fire();
 	}
+	/*
 	if (Character->GetEquippedWeapon()) //
 	{
 		Character->GetEquippedWeapon()->SetHUDAmmo();
 	}
+	*/
 }
 
 void UCombatComponent::UpdateWeaponAmmos()
@@ -332,8 +336,35 @@ void UCombatComponent::UpdateWeaponAmmos()
 
 	int32 ReloadAmount = AmountToReload();
 
-	EquippedWeapon->SetCarriedAmmo(EquippedWeapon->GetCarriedAmmo() - ReloadAmount);
+	EquippedWeapon->SetCarriedAmmo(EquippedWeapon->GetCarriedAmmo() - ReloadAmount); //
 	
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(EquippedWeapon->GetCarriedAmmo());
+	}
+	EquippedWeapon->AddAmmo(ReloadAmount);
+}
+
+void UCombatComponent::UpdateCarriedAmmo()
+{
+	if (EquippedWeapon == nullptr) return;
+
+	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
+	if (Controller)
+	{
+		Controller->SetHUDCarriedAmmo(EquippedWeapon->GetCarriedAmmo());
+	}
+}
+
+void UCombatComponent::UpdateAmmoValues()
+{
+	if (Character == nullptr || EquippedWeapon == nullptr) return;
+
+	int32 ReloadAmount = AmountToReload();
+
+	EquippedWeapon->SetCarriedAmmo(EquippedWeapon->GetCarriedAmmo() - ReloadAmount); //
+
 	Controller = Controller == nullptr ? Cast<ABlasterPlayerController>(Character->Controller) : Controller;
 	if (Controller)
 	{

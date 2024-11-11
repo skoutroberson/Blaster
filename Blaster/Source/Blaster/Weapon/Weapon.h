@@ -101,6 +101,9 @@ public:
 
 	FVector TraceEndWithScatter(const FVector& HitTarget);
 
+	UFUNCTION(Client, Reliable)
+	void ClientUpdateAmmoOnPickup(int32 ServerAmmo);
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnWeaponStateSet();

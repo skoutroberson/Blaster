@@ -401,6 +401,12 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	RotateInPlace(DeltaTime);
 	HideCameraIfCharacterClose();
 	PollInit();
+
+	if (!HasAuthority() && GetEquippedWeapon() && IsLocallyControlled())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Ammo: %d"), GetEquippedWeapon()->GetAmmo());
+		UE_LOG(LogTemp, Warning, TEXT("Mag Cap: %d"), GetEquippedWeapon()->GetMagCapacity());
+	}
 }
 
 void ABlasterCharacter::RotateInPlace(float DeltaTime)
