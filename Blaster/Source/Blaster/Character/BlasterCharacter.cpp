@@ -401,12 +401,6 @@ void ABlasterCharacter::Tick(float DeltaTime)
 	RotateInPlace(DeltaTime);
 	HideCameraIfCharacterClose();
 	PollInit();
-
-	if (!HasAuthority() && GetEquippedWeapon() && IsLocallyControlled())
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Ammo: %d"), GetEquippedWeapon()->GetAmmo());
-		UE_LOG(LogTemp, Warning, TEXT("Mag Cap: %d"), GetEquippedWeapon()->GetMagCapacity());
-	}
 }
 
 void ABlasterCharacter::RotateInPlace(float DeltaTime)
@@ -831,6 +825,10 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 		{
 			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = true;
 		}
+		if (Combat && Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh())
+		{
+			Combat->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = true;
+		}
 	}
 	else
 	{
@@ -838,6 +836,10 @@ void ABlasterCharacter::HideCameraIfCharacterClose()
 		if (Combat && Combat->EquippedWeapon && Combat->EquippedWeapon->GetWeaponMesh())
 		{
 			Combat->EquippedWeapon->GetWeaponMesh()->bOwnerNoSee = false;
+		}
+		if (Combat && Combat->SecondaryWeapon && Combat->SecondaryWeapon->GetWeaponMesh())
+		{
+			Combat->SecondaryWeapon->GetWeaponMesh()->bOwnerNoSee = false;
 		}
 	}
 }

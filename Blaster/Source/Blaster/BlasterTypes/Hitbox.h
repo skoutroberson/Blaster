@@ -54,6 +54,19 @@ struct FHitbox
 		else if (Type == EHitbox::EH_Head) { Damage = WeaponDamage * HEAD_DAMAGE_MULTIPLIER; }
 		return Damage;
 	}
+	static inline float GetDamage(FName& BoneHit, float WeaponDamage)
+	{
+		EHitbox Type = EHitbox::EH_None;
+		if (HitboxTypes.Contains(BoneHit))
+		{
+			Type = HitboxTypes[BoneHit];
+		}
+		float Damage = WeaponDamage;
+		if (Type == EHitbox::EH_Legs) { Damage = WeaponDamage * LEG_DAMAGE_MULTIPLIER; }
+		else if (Type == EHitbox::EH_Body) { Damage = WeaponDamage * BODY_DAMAGE_MULTIPLIER; }
+		else if (Type == EHitbox::EH_Head) { Damage = WeaponDamage * HEAD_DAMAGE_MULTIPLIER; }
+		return Damage;
+	}
 };
 
 

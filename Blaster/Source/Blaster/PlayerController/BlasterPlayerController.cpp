@@ -51,16 +51,26 @@ void ABlasterPlayerController::CheckPing(float DeltaTime)
 		PlayerState = PlayerState == nullptr ? TObjectPtr<APlayerState>(GetPlayerState<APlayerState>()) : PlayerState;
 		if (PlayerState)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Ping: %d"), FMath::CeilToInt(PlayerState->GetPingInMilliseconds()));
+			UE_LOG(LogTemp, Warning, TEXT("Ping: %f"), PlayerState->GetPingInMilliseconds());
 			if (PlayerState->GetPingInMilliseconds() > HighPingThreshold)
 			{
 				HighPingWarning();
 				PingAnimationRunningTime = 0.f;
-				ServerReportPingStatus(true);
+				//ServerReportPingStatus(true);
+				ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
+				if (HasAuthority() && BlasterCharacter && BlasterCharacter->GetEquippedWeapon())
+				{
+					BlasterCharacter->GetEquippedWeapon()->SetServerSideRewind(false);
+				}
 			}
 			else
 			{
-				ServerReportPingStatus(false);
+				//ServerReportPingStatus(false);
+				ABlasterCharacter* BlasterCharacter = Cast<ABlasterCharacter>(GetPawn());
+				if (HasAuthority() && BlasterCharacter && BlasterCharacter->GetEquippedWeapon())
+				{
+					BlasterCharacter->GetEquippedWeapon()->SetServerSideRewind(true);
+				}
 			}
 		}
 		HighPingRunningTime = 0.f;

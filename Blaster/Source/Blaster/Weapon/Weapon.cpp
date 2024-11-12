@@ -12,7 +12,6 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Blaster/PlayerController/BlasterPlayerController.h"
 #include "Kismet/KismetMathLibrary.h"
-#include "Blaster/BlasterComponents/CombatComponent.h"
 
 // Sets default values
 AWeapon::AWeapon()
@@ -229,6 +228,7 @@ void AWeapon::OnWeaponStateSet()
 void AWeapon::OnPingTooHigh(bool bPingTooHigh)
 {
 	bUseServerSideRewind = !bPingTooHigh;
+	UE_LOG(LogTemp, Warning, TEXT("SERVERSIDE REWIND: %d"), bUseServerSideRewind);
 }
 
 void AWeapon::OnRep_WeaponState()
@@ -367,4 +367,9 @@ void AWeapon::AddQueryIgnoreActor(AActor* IgnoreActor)
 void AWeapon::ClearQueryIgnoreActor()
 {
 	TraceQueryParams.ClearIgnoredActors();
+}
+
+void AWeapon::SetServerSideRewind(bool bUseSSR)
+{
+	bUseServerSideRewind = bUseSSR;
 }

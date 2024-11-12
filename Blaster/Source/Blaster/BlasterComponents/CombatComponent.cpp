@@ -231,9 +231,9 @@ void UCombatComponent::EquipPrimaryWeapon(AWeapon* WeaponToEquip)
 	if (WeaponToEquip == nullptr || Character == nullptr) return;
 	DropEquippedWeapon();
 	EquippedWeapon = WeaponToEquip;
+	EquippedWeapon->SetOwner(Character);
 	EquippedWeapon->SetWeaponState(EWeaponState::EWS_Equipped);
 	AttachActorToRightHand(EquippedWeapon);
-	EquippedWeapon->SetOwner(Character);
 	EquippedWeapon->SetHUDAmmo();
 	PlayEquipWeaponSound(WeaponToEquip);
 	WeaponToEquip->ClientUpdateAmmoOnPickup(WeaponToEquip->GetAmmo());
@@ -245,9 +245,9 @@ void UCombatComponent::EquipSecondaryWeapon(AWeapon* WeaponToEquip)
 {
 	if (WeaponToEquip == nullptr || Character == nullptr) return;
 	SecondaryWeapon = WeaponToEquip;
+	SecondaryWeapon->SetOwner(Character);
 	SecondaryWeapon->SetWeaponState(EWeaponState::EWS_EquippedSecondary);
 	AttachActorToBackpack(WeaponToEquip);
-	SecondaryWeapon->SetOwner(Character);
 	PlayEquipWeaponSound(WeaponToEquip);
 	WeaponToEquip->ClientUpdateAmmoOnPickup(WeaponToEquip->GetAmmo());
 	//SecondaryWeapon->AddQueryIgnoreActor(Character);

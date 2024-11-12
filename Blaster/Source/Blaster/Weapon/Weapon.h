@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "WeaponTypes.h"
+#include "Blaster/BlasterTypes/Hitbox.h"
 #include "Weapon.generated.h"
 
 UENUM(BlueprintType)
@@ -48,6 +49,8 @@ public:
 
 	void AddQueryIgnoreActor(AActor* IgnoreActor);
 	void ClearQueryIgnoreActor();
+
+	void SetServerSideRewind(bool bUseSSR);
 
 	/**
 	* Textures for the weapon crosshairs

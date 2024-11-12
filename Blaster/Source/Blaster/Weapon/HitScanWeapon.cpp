@@ -37,7 +37,7 @@ void AHitScanWeapon::Fire(const FVector& HitTarget)
 			{
 				UGameplayStatics::ApplyDamage(
 					BlasterCharacter,
-					Damage,
+					FHitbox::GetDamage(FireHit.BoneName, Damage),
 					InstigatorController,
 					this,
 					UDamageType::StaticClass()

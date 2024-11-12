@@ -654,7 +654,7 @@ void ULagCompensationComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	SaveFramePackage();
+	//SaveFramePackage();
 	SaveFramePackageCapsule();
 }
 
@@ -703,7 +703,7 @@ void ULagCompensationComponent::SaveFramePackageCapsule()
 		FFramePackageCapsule ThisFrame;
 		SaveFramePackageCapsule(ThisFrame);
 		FrameHistoryCapsule.AddHead(ThisFrame);
-		ShowFramePackageCapsule(ThisFrame, FColor::Red);
+		//ShowFramePackageCapsule(ThisFrame, FColor::Red);
 	}
 }
 
