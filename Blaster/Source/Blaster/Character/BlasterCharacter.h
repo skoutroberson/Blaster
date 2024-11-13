@@ -35,9 +35,15 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PostInitializeComponents() override;
 	virtual void Destroyed() override;
+
+	/**
+	* Play montages
+	*/
 	void PlayFireMontage(bool bAiming);
 	void PlayReloadMontage();
 	void PlayElimMontage(const FName& ElimSide);
+	void PlaySwapMontage();
+
 	virtual void OnRep_ReplicatedMovement() override;
 	void Elim();
 	UFUNCTION(NetMulticast, Reliable)
@@ -64,6 +70,8 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void Multicast_SpawnBlood(const FVector_NetQuantize Location, const FVector_NetQuantize Normal, EWeaponType WeaponType);
+
+	bool bFinishedSwapping = false;
 
 	//UPROPERTY()
 	//TMap<FName, EHitbox> HitboxTypes; // maps bone names to EHitbox type
@@ -208,6 +216,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	UAnimMontage* ElimMontage;
+
+	UPROPERTY(EditAnywhere, Category = Combat)
+	UAnimMontage* SwapMontage;
 
 	void HideCameraIfCharacterClose();
 

@@ -84,7 +84,8 @@ void UBlasterAnimInstance::NativeUpdateAnimation(float DeltaTime)
 	}
 
 	bUseFABRIK = BlasterCharacter->GetCombatState() == ECombatState::ECS_Unoccupied;
-	if (BlasterCharacter->IsLocallyControlled())
+	bool bFABRIKOverride = BlasterCharacter->IsLocallyControlled() && BlasterCharacter->bFinishedSwapping;
+	if (bFABRIKOverride)
 	{
 		bUseFABRIK = !BlasterCharacter->IsLocallyReloading();
 	}
