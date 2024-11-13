@@ -40,6 +40,7 @@ public:
 	FHighPingDelegate HighPingDelegate;
 	
 protected:
+	virtual void SetupInputComponent() override;
 	virtual void BeginPlay() override;
 	void SetHUDTime();
 	void PollInit();
@@ -74,9 +75,24 @@ protected:
 	void StopHighPingWarning();
 	void CheckPing(float DeltaTime);
 
+	void ShowReturnToMainMenu();
+
+
 private:
 	UPROPERTY()
 	class ABlasterHUD* BlasterHUD;
+
+	/**
+	* Return to main menu
+	*/
+
+	UPROPERTY(EditAnywhere, Category = HUD)
+	TSubclassOf<class UUserWidget> ReturnToMainMenuWidget;
+
+	UPROPERTY()
+	class UReturnToMainMenu* ReturnToMainMenu;
+
+	bool bReturnToMainMenuOpen = false;
 
 	UPROPERTY()
 	class ABlasterGameMode* BlasterGameMode;
