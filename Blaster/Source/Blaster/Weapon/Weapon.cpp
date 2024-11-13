@@ -70,16 +70,16 @@ void AWeapon::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (PickupWidget)
-	{
-		PickupWidget->SetVisibility(false);
-	}
-	
 	// want to put this in NewHost() whenever the listen server host changes instead of just having this in BeginPlay()
 	AreaSphere->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	AreaSphere->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
 	AreaSphere->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnSphereOverlap);
 	AreaSphere->OnComponentEndOverlap.AddDynamic(this, &AWeapon::OnSphereEndOverlap);
+
+	if (PickupWidget)
+	{
+		PickupWidget->SetVisibility(false);
+	}
 }
 
 void AWeapon::Tick(float DeltaTime)
