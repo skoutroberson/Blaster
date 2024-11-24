@@ -22,6 +22,8 @@ enum class EDeathAnimState : uint8
 	EDAS_Crouch		UMETA(DisplayName = "Crouch"),
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLeftGame);
+
 UCLASS()
 class BLASTER_API ABlasterCharacter : public ACharacter, public IInteractWithCrosshairsInterface
 {
@@ -45,9 +47,9 @@ public:
 	void PlaySwapMontage();
 
 	virtual void OnRep_ReplicatedMovement() override;
-	void Elim();
+	void Elim(bool bPlayerLeftGame);
 	UFUNCTION(NetMulticast, Reliable)
-	void MultiCastElim();
+	void MultiCastElim(bool bPlayerLeftGame);
 
 	EDeathAnimState CalculateDeathAnimState(const FVector& DamageCauserPosition);
 
@@ -72,6 +74,12 @@ public:
 	void Multicast_SpawnBlood(const FVector_NetQuantize Location, const FVector_NetQuantize Normal, EWeaponType WeaponType);
 
 	bool bFinishedSwapping = false;
+
+	UFUNCTION(Server, Reliable)
+	void ServerLeaveGame();
+	void ServerLeaveGame_Implementation();
+
+	FOnLeftGame OnLeftGame;
 
 	//UPROPERTY()
 	//TMap<FName, EHitbox> HitboxTypes; // maps bone names to EHitbox type
@@ -263,6 +271,8 @@ private:
 
 	void ElimTimerFinished();
 	void RagdollTimerFinished();
+
+	bool bLeftGame = false;
 
 	FCollisionResponseContainer CapsuleCollisionResponses;
 	FCollisionResponseContainer MeshCollisionResponses;
