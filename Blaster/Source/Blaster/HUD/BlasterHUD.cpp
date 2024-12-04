@@ -5,29 +5,60 @@
 #include "GameFramework/PlayerController.h"
 #include  "CharacterOverlay.h"
 #include "Announcement.h"
+#include "ElimAnnouncement.h"
+#include "Components/TextBlock.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Components/HorizontalBox.h"
+#include "Components/CanvasPanelSlot.h"
 
 void ABlasterHUD::BeginPlay()
 {
 	Super::BeginPlay();
+
+	AddElimAnnouncement("Player1", "Player2");
 }
 
 void ABlasterHUD::AddCharacterOverlay()
 {
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController && CharacterOverlayClass && !CharacterOverlay)
+	OwningPlayer = OwningPlayer == nullptr ? GetOwningPlayerController() : OwningPlayer;
+	if (OwningPlayer && CharacterOverlayClass && !CharacterOverlay)
 	{
-		CharacterOverlay = CreateWidget<UCharacterOverlay>(PlayerController, CharacterOverlayClass);
+		CharacterOverlay = CreateWidget<UCharacterOverlay>(OwningPlayer, CharacterOverlayClass);
 		CharacterOverlay->AddToViewport();
 	}
 }
 
 void ABlasterHUD::AddAnnouncement()
 {
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController && AnnouncementClass)
+	OwningPlayer = OwningPlayer == nullptr ? GetOwningPlayerController() : OwningPlayer;
+	if (OwningPlayer && AnnouncementClass)
 	{
-		Announcement = CreateWidget<UAnnouncement>(PlayerController, AnnouncementClass);
+		Announcement = CreateWidget<UAnnouncement>(OwningPlayer, AnnouncementClass);
 		Announcement->AddToViewport();
+	}
+}
+
+void ABlasterHUD::AddElimAnnouncement(FString AttackerName, FString VictimName)
+{
+	OwningPlayer = OwningPlayer == nullptr ? GetOwningPlayerController() : OwningPlayer;
+	if (OwningPlayer && ElimAnnouncementClass)
+	{
+		UElimAnnouncement* ElimAnnouncementWidget = CreateWidget<UElimAnnouncement>(OwningPlayer, ElimAnnouncementClass);
+		if (ElimAnnouncementWidget)
+		{
+			ElimAnnouncementWidget->SetElimAnnouncementText(AttackerName, VictimName);
+			ElimAnnouncementWidget->AddToViewport();
+			UpdateEliminationStack(ElimAnnouncementWidget);
+			ShowElimAnnouncements();
+			GetWorldTimerManager().SetTimer(
+				ElimAnnouncementHandle,
+				this,
+				&ABlasterHUD::ElimAnnouncementTimerFinished,
+				4.0f,
+				false,
+				4.0f
+			);
+		}
 	}
 }
 
@@ -92,4 +123,68 @@ void ABlasterHUD::DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, F
 		1.f,
 		CrosshairColor
 	);
+}
+
+void ABlasterHUD::UpdateEliminationStack(UElimAnnouncement* NewElimAnnounement)
+{
+	ElimAnnouncementQueue.Add(NewElimAnnounement);
+
+	if (ElimAnnouncementQueue.Num() > MaxElimAnnouncements)
+	{
+		UElimAnnouncement* ElimAnnouncementToRemove = ElimAnnouncementQueue[0];
+		ElimAnnouncementQueue.RemoveAt(0);
+		ElimAnnouncementToRemove->RemoveFromParent();
+		/*
+		for (UElimAnnouncement* CurrentAnnouncement : ElimAnnouncementStack)
+		{
+			if (CurrentAnnouncement && CurrentAnnouncement->AnnouncementBox)
+			{
+				UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(CurrentAnnouncement->AnnouncementBox);
+				if (CanvasSlot)
+				{
+					FVector2D Position = CanvasSlot->GetPosition();
+					FVector2D NewPosition(Position.X, Position.Y + CanvasSlot->GetSize().Y);
+					CanvasSlot->SetPosition(NewPosition);
+				}
+			}
+		}
+		*/
+	}
+}
+
+void ABlasterHUD::ElimAnnouncementTimerFinished()
+{
+	for (UElimAnnouncement* CurrentAnnouncement : ElimAnnouncementQueue)
+	{
+		if (CurrentAnnouncement && CurrentAnnouncement->FadeOutAnnouncement)
+		{
+			CurrentAnnouncement->PlayAnimation(CurrentAnnouncement->FadeOutAnnouncement);
+		}
+	}
+}
+
+void ABlasterHUD::ShowElimAnnouncements()
+{
+	GetWorldTimerManager().ClearTimer(ElimAnnouncementHandle);
+
+	for (UElimAnnouncement* CurrentAnnouncement : ElimAnnouncementQueue)
+	{
+		if (CurrentAnnouncement && CurrentAnnouncement->AnnouncementBox && CurrentAnnouncement->AnnouncementText)
+		{
+			if (CurrentAnnouncement->IsAnimationPlaying(CurrentAnnouncement->FadeOutAnnouncement))
+			{
+				CurrentAnnouncement->StopAnimation(CurrentAnnouncement->FadeOutAnnouncement);
+			}
+
+			UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(CurrentAnnouncement->AnnouncementBox);
+			if (CanvasSlot)
+			{
+				FVector2D Position = CanvasSlot->GetPosition();
+				FVector2D NewPosition(Position.X, Position.Y - CanvasSlot->GetSize().Y);
+				CanvasSlot->SetPosition(NewPosition);
+			}
+
+			CurrentAnnouncement->AnnouncementText->SetRenderOpacity(1.0f);
+		}
+	}
 }

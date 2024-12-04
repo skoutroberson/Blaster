@@ -38,6 +38,8 @@ public:
 	float SingleTripTime = 0.f;
 
 	FHighPingDelegate HighPingDelegate;
+
+	void BroadcastElim(APlayerState* Attacker, APlayerState* Victim);
 	
 protected:
 	virtual void SetupInputComponent() override;
@@ -77,6 +79,9 @@ protected:
 
 	void ShowReturnToMainMenu();
 
+	UFUNCTION(Client, Reliable)
+	void ClientElimAnnouncement(APlayerState* Attacker, APlayerState* Victim);
+	void ClientElimAnnouncement_Implementation(APlayerState* Attacker, APlayerState* Victim);
 
 private:
 	UPROPERTY()

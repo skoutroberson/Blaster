@@ -46,18 +46,40 @@ public:
 	class UAnnouncement* Announcement;
 
 	void AddAnnouncement();
+	void AddElimAnnouncement(FString AttackerName, FString VictimName);
 
 
 protected:
 	virtual void BeginPlay() override;
 
 private:
+
+	UPROPERTY()
+	class APlayerController* OwningPlayer;
+
 	FHUDPackage HUDPackage;
 
 	void DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, FVector2D Spread, FLinearColor CrosshairColor);
 
 	UPROPERTY(EditAnywhere)
 	float CrosshairSpreadMax = 16.f;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UElimAnnouncement> ElimAnnouncementClass;
+
+	TArray<UElimAnnouncement*> ElimAnnouncementQueue;
+
+	void UpdateEliminationStack(UElimAnnouncement* NewElimAnnounement);
+
+	UPROPERTY(EditAnywhere)
+	uint16 MaxElimAnnouncements = 5;
+
+	FTimerHandle ElimAnnouncementHandle;
+
+	// fade out elim announcements
+	void ElimAnnouncementTimerFinished();
+
+	void ShowElimAnnouncements();
 
 public:
 	FORCEINLINE void SetHUDPackage(const FHUDPackage& Package) { HUDPackage = Package; }
