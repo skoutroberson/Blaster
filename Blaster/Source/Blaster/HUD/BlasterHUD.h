@@ -69,7 +69,7 @@ private:
 
 	TArray<UElimAnnouncement*> ElimAnnouncementQueue;
 
-	void UpdateEliminationStack(UElimAnnouncement* NewElimAnnounement);
+	void UpdateEliminationQueue(UElimAnnouncement* NewElimAnnounement);
 
 	UPROPERTY(EditAnywhere)
 	uint16 MaxElimAnnouncements = 5;

@@ -48,15 +48,15 @@ void ABlasterHUD::AddElimAnnouncement(FString AttackerName, FString VictimName)
 		{
 			ElimAnnouncementWidget->SetElimAnnouncementText(AttackerName, VictimName);
 			ElimAnnouncementWidget->AddToViewport();
-			UpdateEliminationStack(ElimAnnouncementWidget);
+			UpdateEliminationQueue(ElimAnnouncementWidget);
 			ShowElimAnnouncements();
 			GetWorldTimerManager().SetTimer(
 				ElimAnnouncementHandle,
 				this,
 				&ABlasterHUD::ElimAnnouncementTimerFinished,
-				4.0f,
+				6.0f,
 				false,
-				4.0f
+				6.0f
 			);
 		}
 	}
@@ -125,7 +125,7 @@ void ABlasterHUD::DrawCrosshair(UTexture2D* Texture, FVector2D ViewportCenter, F
 	);
 }
 
-void ABlasterHUD::UpdateEliminationStack(UElimAnnouncement* NewElimAnnounement)
+void ABlasterHUD::UpdateEliminationQueue(UElimAnnouncement* NewElimAnnounement)
 {
 	ElimAnnouncementQueue.Add(NewElimAnnounement);
 
@@ -134,21 +134,6 @@ void ABlasterHUD::UpdateEliminationStack(UElimAnnouncement* NewElimAnnounement)
 		UElimAnnouncement* ElimAnnouncementToRemove = ElimAnnouncementQueue[0];
 		ElimAnnouncementQueue.RemoveAt(0);
 		ElimAnnouncementToRemove->RemoveFromParent();
-		/*
-		for (UElimAnnouncement* CurrentAnnouncement : ElimAnnouncementStack)
-		{
-			if (CurrentAnnouncement && CurrentAnnouncement->AnnouncementBox)
-			{
-				UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(CurrentAnnouncement->AnnouncementBox);
-				if (CanvasSlot)
-				{
-					FVector2D Position = CanvasSlot->GetPosition();
-					FVector2D NewPosition(Position.X, Position.Y + CanvasSlot->GetSize().Y);
-					CanvasSlot->SetPosition(NewPosition);
-				}
-			}
-		}
-		*/
 	}
 }
 

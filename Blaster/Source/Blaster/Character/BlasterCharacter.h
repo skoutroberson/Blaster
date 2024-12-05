@@ -7,7 +7,7 @@
 #include "Blaster/BlasterTypes/TurningInPlace.h"
 #include "Blaster/Interfaces/InteractWithCrosshairsInterface.h"
 #include "Blaster/BlasterTypes/CombatState.h"
-//#include "Blaster/BlasterTypes/Hitbox.h"
+#include "Blaster/BlasterTypes/Team.h"
 #include "BlasterCharacter.generated.h"
 
 UENUM(BlueprintType)
@@ -81,8 +81,7 @@ public:
 
 	FOnLeftGame OnLeftGame;
 
-	//UPROPERTY()
-	//TMap<FName, EHitbox> HitboxTypes; // maps bone names to EHitbox type
+	void SetTeamColor(ETeam Team);
 
 protected:
 	virtual void BeginPlay() override;
@@ -296,6 +295,22 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	class USoundCue* ImpactBodySound;
+
+	/**
+	* Team colors
+	*/
+
+	UPROPERTY(EditAnywhere)
+	UMaterialInstance* RedMaterial;
+
+	UPROPERTY(EditAnywhere)
+	UMaterialInstance* BlueMaterial;
+
+	UPROPERTY(EditAnywhere)
+	UMaterialInstance* OriginalMaterial;
+
+	UPROPERTY()
+	class ABlasterGameMode* BlasterGameMode;
 
 public:	
 

@@ -270,7 +270,7 @@ void ABlasterCharacter::RagdollAfterDelay(float DelayMin, float DelayMax)
 
 void ABlasterCharacter::ElimTimerFinished()
 {
-	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
 	if (BlasterGameMode && !bLeftGame)
 	{
 		BlasterGameMode->RequestRespawn(this, Controller);
@@ -295,7 +295,7 @@ void ABlasterCharacter::RagdollTimerFinished()
 
 void ABlasterCharacter::ServerLeaveGame_Implementation()
 {
-	ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
 	BlasterPlayerState = BlasterPlayerState == nullptr ? GetPlayerState<ABlasterPlayerState>() : BlasterPlayerState;
 	if (BlasterGameMode && BlasterPlayerState)
 	{
@@ -365,7 +365,7 @@ void ABlasterCharacter::Destroyed()
 {
 	Super::Destroyed();
 
-	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this));
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
 	bool bMatchNotInProgress = BlasterGameMode && BlasterGameMode->GetMatchState() != MatchState::InProgress;
 
 	if (Combat && Combat->EquippedWeapon && bMatchNotInProgress)
@@ -386,7 +386,7 @@ void ABlasterCharacter::UpdateHUDAmmo()
 
 void ABlasterCharacter::SpawnDefaultWeapon()
 {
-	ABlasterGameMode* BlasterGameMode = Cast<ABlasterGameMode>(UGameplayStatics::GetGameMode(this)); // will only not be nullptr on the server
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
 	UWorld* World = GetWorld();
 	if (BlasterGameMode && World && !bElimmed && DefaultWeaponClass)
 	{
@@ -396,6 +396,24 @@ void ABlasterCharacter::SpawnDefaultWeapon()
 		{
 			Combat->EquipWeapon(StartingWeapon);
 		}
+	}
+}
+
+void ABlasterCharacter::SetTeamColor(ETeam Team)
+{
+	if (GetMesh() == nullptr || OriginalMaterial == nullptr || RedMaterial == nullptr || BlueMaterial == nullptr) return;
+
+	switch (Team)
+	{
+	case ETeam::ET_NoTeam:
+		GetMesh()->SetMaterial(0, OriginalMaterial);
+		break;
+	case ETeam::ET_RedTeam:
+		GetMesh()->SetMaterial(0, RedMaterial);
+		break;
+	case ETeam::ET_BlueTeam:
+		GetMesh()->SetMaterial(0, BlueMaterial);
+		break;
 	}
 }
 
@@ -561,13 +579,16 @@ void ABlasterCharacter::PlayHitReactMontage()
 
 void ABlasterCharacter::ReceiveDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatorController, AActor* DamageCauser)
 {
+	BlasterGameMode = BlasterGameMode == nullptr ? GetWorld()->GetAuthGameMode<ABlasterGameMode>() : BlasterGameMode;
+	if (bElimmed || BlasterGameMode == nullptr) return;
+	Damage = BlasterGameMode->CalculateDamage(InstigatorController, Controller, Damage);
+
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 	UpdateHUDHealth();
 	PlayHitReactMontage();
 
 	if (Health == 0.f && !bElimmed)
 	{
-		ABlasterGameMode* BlasterGameMode = GetWorld()->GetAuthGameMode<ABlasterGameMode>();
 		if (BlasterGameMode)
 		{
 			BlasterPlayerController = BlasterPlayerController == nullptr ? Cast<ABlasterPlayerController>(Controller) : BlasterPlayerController;
@@ -905,6 +926,7 @@ void ABlasterCharacter::PollInit()
 		{
 			BlasterPlayerState->AddToScore(0.f);
 			BlasterPlayerState->AddToDefeats(0);
+			SetTeamColor(BlasterPlayerState->GetTeam());
 		}
 	}
 	if (BlasterPlayerController == nullptr)
